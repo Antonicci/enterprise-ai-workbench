@@ -26,7 +26,9 @@ function App(){
   const response=await fetch(path,{method:body?'POST':'GET',headers:{Authorization:`Bearer ${credential}`,...(body?{'Content-Type':'application/json'}:{})},body:body?JSON.stringify(body):undefined});
   if(generation!==epoch.current) throw new Error('Sessão alterada. Repita a operação.');
   if(!response.ok){const data=await response.json().catch(()=>null);throw new Error(typeof data?.detail==='string'?data.detail:`Falha ${response.status}. Confira acesso e disponibilidade.`);}
-  return response.json();
+  const data=await response.json();
+  if(generation!==epoch.current) throw new Error('Sessão alterada. Repita a operação.');
+  return data;
  }
  useEffect(()=>{let active=true;initializeAuth().then(async state=>{if(!active)return;setAuth(state.settings);if(state.authenticated){try{const c=await request('/api/config');if(active)setConfig(c);}catch(e){if(active)setError((e as Error).message);}}}).catch(e=>{if(active)setError((e as Error).message);});return()=>{active=false;};},[]);
  async function connect(){clearSession();try{setConfig(await request('/api/config'));}catch(e){setError((e as Error).message);}}

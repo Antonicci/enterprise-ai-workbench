@@ -16,7 +16,7 @@ Não há administração de identidades dentro do Workbench. O administrador do 
 
 Overlay `compose.oidc.yaml`, realm `workbench`, SPA pública `workbench-web`, API `workbench-api`. Importa três usuários. Direct Access Grants e fluxo implícito estão desabilitados. PKCE S256 é obrigatório na SPA. Não existe client secret no frontend.
 
-O navegador usa emissor público `http://localhost:8180/realms/workbench`. No contêiner, o backend busca JWKS no endereço interno `http://keycloak:8080/realms/workbench/protocol/openid-connect/certs` e continua validando o emissor público exato. URL de chaves vem da configuração, nunca do token recebido. Algoritmo aceito: RS256. Campos obrigatórios: exp, iat, sub, iss e aud. O client mapper adiciona a audiência da API somente ao access token.
+O navegador usa emissor público `http://localhost:8180/realms/workbench`. No contêiner, o backend busca JWKS no endereço interno `http://keycloak:8080/realms/workbench/protocol/openid-connect/certs` e continua validando o emissor público exato. URL de chaves vem da configuração, nunca do token recebido. Algoritmo aceito: RS256. Campos obrigatórios: exp, iat, sub, iss e aud. O client scope basic é obrigatório para fornecer sub no access token nas versões atuais do Keycloak. O client mapper adiciona a audiência da API somente ao access token.
 
 O frontend utiliza oidc-client-ts com tokens em memória. Estado transitório/PKCE em sessionStorage, removido ao consumir o callback. Sem renovação automática nesta versão; tokens expiram em 5 minutos no realm de laboratório. Reentrar obtém nova sessão/token. Logout redireciona ao IdP. JWT já emitido pode permanecer válido até expirar; não há revogação imediata via introspecção.
 

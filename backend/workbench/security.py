@@ -1,4 +1,5 @@
 """Identity is verified first; roles grant permissions, never tool arguments."""
+import logging
 import hashlib
 import secrets
 from dataclasses import dataclass
@@ -48,7 +49,8 @@ class Authenticator:
             claims = jwt.decode(token,key,algorithms=["RS256"],audience=self.settings.oidc_audience,
                                 issuer=self.settings.oidc_issuer,
                                 options={"require":["exp","iat","sub","iss","aud"]})
-        except (jwt.PyJWTError, ValueError, TypeError, KeyError):
+        except (jwt.PyJWTError, ValueError, TypeError, KeyError) as exc:
+            logging.getLogger("workbench.audit").warning("oidc_rejected reason=%s",type(exc).__name__)
             raise HTTPException(status_code=401,detail="Access token inválido ou expirado") from None
         roles = claims
         for part in self.settings.oidc_roles_claim.split("."):
