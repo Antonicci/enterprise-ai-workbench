@@ -73,6 +73,10 @@ Fluxo: Authorization Code + PKCE, access token destinado à API, validação RS2
 
 O volume `keycloakdata` preserva usuários e configurações. A importação inicial não atualiza um realm já existente. Consulte [identidade e migração](docs/08-identity-and-profiles.md).
 
+## Escopo e origem das evidências
+
+Documentos podem ser associados a pedidos, pagamentos ou uso geral. A busca aplica escopo e acesso antes do ranking. O contexto do modelo distingue orientações documentais de medições MCP, e a interface apresenta um bloco de evidência direta da ferramenta. [Motivação, migração e limites](docs/10-source-attribution-and-scope.md).
+
 ## Roteiro visual
 
 1. Entre como consulta1 e investigue erros HTTP 500 na API de pedidos. Veja somente fontes nível 1.

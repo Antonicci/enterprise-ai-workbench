@@ -35,3 +35,5 @@ O corpus empacotado é sintético e indexado apenas se ausente ao iniciar. Em me
 ## Extensão de monitoramento com ML
 
 Criar série sintética versionada e baseline de regra. Adicionar detector só quando melhorar precisão/recall ou tempo de detecção. O detector entrega score, versão e intervalo; MCP retorna esse resultado. RAG recupera o runbook; o LLM explica evidências. A ferramenta não transforma correlação em causa raiz.
+
+Atribuição de fontes e escopo agora têm testes de regressão e contexto tipado: [detalhes](10-source-attribution-and-scope.md). Isso não equivale a uma avaliação semântica automática de todas as respostas do modelo.

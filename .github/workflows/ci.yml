@@ -110,7 +110,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
-      CHAT_MODEL: qwen2.5:0.5b
+      CHAT_MODEL: qwen2.5:3b
       EMBEDDING_MODEL: nomic-embed-text
     steps:
       - uses: actions/checkout@v4

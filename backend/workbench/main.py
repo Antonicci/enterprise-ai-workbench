@@ -8,7 +8,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from .config import Settings
 from .models import DocumentInput, Question
 from .security import Authenticator, require, authorize_tool, ROLE_LABELS
-from .retrieval import Retrieval
+from .retrieval import Retrieval, resolve_scope
 from .seed import seed
 from .mcp_client import call_metrics, call_ai_metrics
 from .observability import Observability
@@ -58,7 +58,7 @@ def create_app(settings: Settings | None = None):
     @app.get("/api/documents")
     def documents(request: Request,user=Depends(identity)):
         require(user,"documents:search")
-        return [{"id":d.id,"title":d.title,"access_level":d.access_level} for d in request.app.state.retrieval.store.list_documents(user.groups)]
+        return [{"id":d.id,"title":d.title,"access_level":d.access_level,"services":d.services} for d in request.app.state.retrieval.store.list_documents(user.groups)]
 
     @app.get("/api/documents/{document_id}")
     def document(document_id: str,request: Request,user=Depends(identity)):
@@ -89,13 +89,16 @@ def create_app(settings: Settings | None = None):
     async def chat(body: Question,request: Request,user=Depends(identity),credentials=Depends(bearer)):
         require(user,"documents:search")
         if body.include_metrics: authorize_tool(user,"get_service_metrics",body.service)
+        scope=resolve_scope(body.question,body.document_scope,body.service if body.include_metrics else None)
+        if body.include_metrics and scope not in (None,"all",body.service):
+            raise HTTPException(status_code=422,detail="Escopo documental e serviço MCP devem coincidir ou usar Todos.")
         started,trace_id=time.perf_counter(),uuid.uuid4().hex
         retrieval=request.app.state.retrieval
         execution=[]
         try:
             async with asyncio.timeout(settings.request_timeout):
                 phase=time.perf_counter()
-                citations=await asyncio.to_thread(retrieval.search,body.question,user.groups)
+                citations=await asyncio.to_thread(retrieval.search,body.question,user.groups,scope)
                 execution.append({"id":"retrieval","label":"Recuperação autorizada","elapsed_ms":round((time.perf_counter()-phase)*1000),"detail":f"{len(citations)} trechos recuperados","status":"completed"})
                 phase=time.perf_counter()
                 metrics=await call_metrics(settings,credentials.credentials,body.service) if body.include_metrics else None
@@ -111,7 +114,7 @@ def create_app(settings: Settings | None = None):
         request.app.state.observability.record(elapsed,len(citations),int(bool(metrics)))
         log.info("chat trace=%s subject=%s sources=%s metrics=%s elapsed_ms=%s",trace_id,user.subject,len(citations),body.include_metrics,elapsed)
         return {"answer":answer,"citations":[c.model_dump() for c in citations],"metrics":metrics,
-                "trace_id":trace_id,"elapsed_ms":elapsed,"provider":settings.provider,"execution":execution,
+                "trace_id":trace_id,"elapsed_ms":elapsed,"provider":settings.provider,"execution":execution,"retrieval_scope":scope or "all",
                 "chat_model":settings.chat_model if settings.provider!="demo" else "extractive-demo",
                 "tool_calls":[{"name":"get_service_metrics","transport":"MCP stdio","status":"ok"}] if metrics else []}
     return app

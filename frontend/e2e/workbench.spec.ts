@@ -113,3 +113,18 @@ test('presentation mode keeps identity, measured stages and source evidence',asy
  await page.getByRole('button',{name:'Sair da apresentação',exact:true}).click();
  await expect(page.getByRole('button',{name:'Conhecimento',exact:false})).toBeVisible();
 });
+test('retrieval shows document scope and distinguishes direct MCP evidence',async({page})=>{
+ await connect(page,'l2');
+ await page.getByRole('checkbox').check();
+ await page.getByRole('button',{name:'Investigar →',exact:true}).click();
+ await expect(page.getByLabel('Evidência direta da ferramenta')).toContainText('get_service_metrics');
+ await expect(page.getByLabel('Evidência direta da ferramenta')).toContainText('não do runbook');
+ await expect(page.locator('.source-panel')).not.toContainText('Runbook — latência em pagamentos');
+ await expect(page.locator('.source-panel')).toContainText('DOCUMENTO');
+ await page.getByLabel('Escopo dos documentos').selectOption('payments-api');
+ await page.getByLabel('Serviço',{exact:true}).selectOption('payments-api');
+ await page.locator('#question').fill('Como investigar latência na API de pagamentos?');
+ await page.getByRole('button',{name:'Investigar →',exact:true}).click();
+ await expect(page.locator('.source-panel')).toContainText('Runbook — latência em pagamentos');
+ await expect(page.locator('.source-panel')).not.toContainText('Runbook — erros na API de pedidos');
+});

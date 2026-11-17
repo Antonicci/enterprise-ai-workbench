@@ -3,18 +3,25 @@
     "id": "orders-runbook",
     "title": "Runbook — erros na API de pedidos",
     "text": "Documento SINTÉTICO para laboratório. A API de pedidos orders-api atende criação e consulta de pedidos. Em aumento de erros HTTP 500, primeiro verifique taxa de erros, latência p95, dependências e mudanças recentes. Compare a janela afetada com o comportamento anterior. Confira o pool de conexões do banco e timeouts. Uma taxa de erros acima de 2% por 5 minutos exige investigação. Não reinicie nem faça rollback sem validação e aprovação do responsável. Registre evidências e hipótese antes de propor mitigação.",
-    "access_level": "level1"
+    "access_level": "level1",
+    "services": [
+      "orders-api"
+    ]
   },
   {
     "id": "payments-runbook",
     "title": "Runbook — latência em pagamentos",
     "text": "Documento SINTÉTICO para laboratório. A API de pagamentos payments-api depende de um provedor externo. Quando a latência aumentar, confira timeout, circuit breaker, filas e respostas do provedor. Retentativas precisam respeitar idempotência e orçamento de tempo. Não repita cobranças sem verificar o identificador da transação. Compare métricas antes de atribuir uma causa. Acione o responsável pelo serviço.",
-    "access_level": "level1"
+    "access_level": "level1",
+    "services": [
+      "payments-api"
+    ]
   },
   {
     "id": "ops-internal",
     "title": "Procedimento restrito de operações",
     "text": "Documento SINTÉTICO RESTRITO. Marcador de teste OPS-RESTRICTED-7391. Operações deve abrir uma mudança, registrar plano de rollback, obter aprovação do responsável e verificar a janela operacional antes de qualquer intervenção. Este laboratório não executa alterações em sistemas. Nunca armazene senhas em documentos ou prompts.",
-    "access_level": "level2"
+    "access_level": "level2",
+    "services": []
   }
 ]

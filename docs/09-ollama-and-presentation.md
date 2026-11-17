@@ -72,6 +72,6 @@ Não publicar benchmark de GPU, operação totalmente offline, qualidade de resp
 
 ## Verificação real de modelo no CI
 
-O job ollama-real-smoke é opt-in por mensagem de commit contendo `[ollama-smoke]`. Executa CPU com qwen2.5:0.5b e nomic-embed-text para reduzir recursos do runner. Valida geração, embeddings, fontes e MCP reais. Não mede qualidade e não comprova desempenho do modelo 3B na RTX 4050. Os outros jobs continuam exercitando a demo e os contratos simulados.
+O job ollama-real-smoke é opt-in por mensagem de commit contendo `[ollama-smoke]`. Executa CPU com qwen2.5:3b e nomic-embed-text, incluindo saída para revisão manual de atribuição das fontes. O primeiro smoke histórico utilizou o modelo 0.5B. Valida geração, embeddings, fontes e MCP reais. Não mede qualidade e não comprova desempenho do modelo 3B na RTX 4050. Os outros jobs continuam exercitando a demo e os contratos simulados.
 
 Referências: [Ollama Docker](https://docs.ollama.com/docker), [Qwen2.5](https://ollama.com/library/qwen2.5).

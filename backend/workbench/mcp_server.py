@@ -18,7 +18,7 @@ def get_service_metrics(service: str) -> dict:
     authorize_tool(principal(),"get_service_metrics",service)
     if service not in ("orders-api","payments-api"):
         raise ValueError("Unknown service")
-    return {"service":service,"synthetic":True,"observed_at":datetime.now(timezone.utc).isoformat(),
+    return {"source_id":"mcp:get_service_metrics","source_type":"tool_result","service":service,"synthetic":True,"observed_at":datetime.now(timezone.utc).isoformat(),
             "error_rate_pct":4.8 if service == "orders-api" else 0.3,
             "latency_p95_ms":1450 if service == "orders-api" else 320,
             "window_minutes":5}
