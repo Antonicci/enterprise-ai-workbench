@@ -50,3 +50,15 @@ A UI não implementa revogação imediata de JWT no servidor. Sessões em memór
 - **Ollama real em CPU aprovado**, com qwen2.5:0.5b e nomic-embed-text: geração, embeddings, recuperação e MCP executados. A ferramenta de serviço segue retornando dados sintéticos.
 
 Esse smoke verifica o caminho executável; não avalia a qualidade das respostas. Não é benchmark do modelo 3B nem da RTX 4050 do autor. A configuração de GPU está preparada, mas precisa de validação no host. A tag da imagem Ollama é mutável; o job registra versão e inventário. Não foi verificada ausência total de egress, nem inicialização offline. O provisionador de modelos consulta o registro quando executa pull, mesmo se os pesos já estiverem em cache.
+
+## Escopo e proveniência — regressão do caso HTTP 500
+
+[Execução aprovada 44185276003](https://github.com/Antonicci/enterprise-ai-workbench/actions/runs/44185276003), código 5b893191402800fca06c51d13a16ad77f0cbd54d:
+
+- **31 testes de backend** aprovados, incluindo filtro de escopo/acesso antes do ranking e migração de dados editados no PostgreSQL.
+- Build frontend e **8 testes de navegador em cada modo** (16 no total) aprovados.
+- **Qwen2.5 3B real em CPU**: recuperação de duas fontes, sem runbook de pagamentos; geração e MCP concluídos. Na revisão manual dessa saída, o modelo distinguiu o limiar de 2%, citou a ferramenta e incluiu pool de conexões/timeouts.
+
+A abertura da resposta ainda utilizou uma formulação genérica baseada nos documentos antes de mencionar a observação. Não tratamos uma execução como prova de atribuição perfeita: a interface mostra as medições diretamente com origem MCP, e o texto gerado continua exigindo revisão.
+
+A primeira tentativa do job OIDC falhou no download de imagem Docker com connection reset by peer, antes de subir a aplicação. Apenas o job com falha foi repetido; a tentativa seguinte passou.
