@@ -33,3 +33,7 @@ Keycloak local usa HTTP/start-dev, contas públicas e armazenamento de laborató
 Classificar fontes e finalidade, aprovar provedor/egress, configurar TLS/IdP corporativo, rotação e identidades de serviço mínimas. Aplicar tenant independente de perfil, RLS, quotas, exclusão/retencão de texto/vetores/backups e auditoria durável. Validar matriz de acessos e tentativas de injection. Qualquer ação de escrita em sistemas externos exige autorização, aprovação específica e idempotência.
 
 [Configuração de identidade, perfis e Entra ID](08-identity-and-profiles.md).
+
+## Dependências de build
+
+Na instalação validada em 17/11/2026, npm audit reportou um ReDoS em picomatch (transitivo de ferramentas de build), sem versão corrigida publicada no registro consultado (latest 4.0.7). O contêiner entregue ao usuário serve arquivos estáticos por Nginx e não contém Vite/Node em runtime. Não expor o servidor de desenvolvimento nem aceitar padrões glob de usuários. Acompanhar a correção e atualizar o lock quando disponível; não tratar o build aprovado como ausência de vulnerabilidades.
