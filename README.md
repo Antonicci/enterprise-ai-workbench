@@ -117,6 +117,8 @@ npm ci
 npm run build
 ```
 
+O [workflow validado](https://github.com/Antonicci/enterprise-ai-workbench/actions/runs/44102828104) passou com os **13 testes**, incluindo PostgreSQL/pgvector, build do frontend e execução Docker Compose através do Nginx com RAG + MCP.
+
 Os testes cobrem isolamento de documentos, autenticação, restrição das ferramentas, ingestão, substituição de documentos e chamadas MCP pelo protocolo real. Não substituem avaliação de qualidade de LLM nem teste de carga. Veja [validação](docs/07-validation.md).
 
 ## Trilha corporativa

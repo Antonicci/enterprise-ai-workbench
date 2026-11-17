@@ -18,6 +18,16 @@ Primeira validação: 17/11/2026. Ambiente: Python 3.12 e Node 24. Dependências
 | Geração com Ollama/GPU ou API corporativa real | Não executada; requer modelos/endpoint |
 | Inspeção visual e fluxo de navegador | Não concluídos: o navegador local não iniciou por restrição de socket do ambiente |
 
-Suite inicial: **12 testes passando e 1 teste PostgreSQL ignorado** quando TEST_DATABASE_URL não é definido. O workflow do GitHub está configurado para executar também o teste PostgreSQL com serviço pgvector. O resultado do workflow deve ser consultado em Actions; a configuração não é prova de aprovação.
+Suite inicial: **12 testes passando e 1 teste PostgreSQL ignorado** quando TEST_DATABASE_URL não é definido. O workflow do GitHub está configurado para executar também o teste PostgreSQL com serviço pgvector. A configuração não é prova de aprovação; a execução abaixo é a evidência registrada.
+
+## Execução no GitHub Actions
+
+[Workflow aprovado](https://github.com/Antonicci/enterprise-ai-workbench/actions/runs/44102828104), commit `fc300411e8f7abc11bcd7a7300d7801202e9823c`:
+
+- **Backend: aprovado**, com os 13 testes e serviço PostgreSQL/pgvector real.
+- **Frontend: aprovado**, instalação limpa via npm ci e build TypeScript/Vite.
+- **Compose smoke: aprovado**, build das imagens, startup e consulta HTTP através do Nginx. A consulta autenticada recuperou fontes e recebeu métricas sintéticas pelo protocolo MCP dentro do contêiner.
+
+Isso valida o empacotamento e o fluxo de backend da demonstração. Não substitui inspeção visual ou avaliação com modelo real.
 
 Os testes de contrato não comprovam qualidade semântica, desempenho, compatibilidade com todo provedor ou segurança contra prompt injection. Ainda é necessário executar o laboratório na máquina de destino, revisar a interface e publicar avaliação real antes de apresentar resultados de modelo.
