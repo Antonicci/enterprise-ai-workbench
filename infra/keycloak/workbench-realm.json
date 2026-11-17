@@ -1,0 +1,125 @@
+{
+  "realm": "workbench",
+  "enabled": true,
+  "displayName": "Enterprise AI Workbench — LAB",
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "resetPasswordAllowed": false,
+  "accessTokenLifespan": 300,
+  "roles": {
+    "realm": [
+      {
+        "name": "knowledge-manager"
+      },
+      {
+        "name": "query-l1"
+      },
+      {
+        "name": "query-l2"
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "workbench-web",
+      "name": "Workbench SPA",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "implicitFlowEnabled": false,
+      "redirectUris": [
+        "http://localhost:8080/auth/callback",
+        "http://localhost:5173/auth/callback"
+      ],
+      "webOrigins": [
+        "http://localhost:8080",
+        "http://localhost:5173"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:8080/##http://localhost:5173/"
+      },
+      "defaultClientScopes": [
+        "profile",
+        "email",
+        "roles",
+        "web-origins"
+      ],
+      "protocolMappers": [
+        {
+          "name": "workbench-api-audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.custom.audience": "workbench-api",
+            "id.token.claim": "false",
+            "access.token.claim": "true"
+          }
+        }
+      ]
+    },
+    {
+      "clientId": "workbench-api",
+      "enabled": true,
+      "bearerOnly": true,
+      "protocol": "openid-connect"
+    }
+  ],
+  "users": [
+    {
+      "username": "gestor",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "gestor@example.invalid",
+      "firstName": "Gestor",
+      "lastName": "Laboratório",
+      "realmRoles": [
+        "knowledge-manager"
+      ],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Workbench-Lab-2026!",
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "username": "consulta1",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "consulta1@example.invalid",
+      "firstName": "Consulta nível 1",
+      "lastName": "Laboratório",
+      "realmRoles": [
+        "query-l1"
+      ],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Workbench-Lab-2026!",
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "username": "consulta2",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "consulta2@example.invalid",
+      "firstName": "Consulta nível 2",
+      "lastName": "Laboratório",
+      "realmRoles": [
+        "query-l2"
+      ],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Workbench-Lab-2026!",
+          "temporary": false
+        }
+      ]
+    }
+  ]
+}

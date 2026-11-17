@@ -1,146 +1,145 @@
 # Enterprise AI Workbench
 
-**Laboratório de arquitetura de IA corporativa: RAG com fontes, ferramentas MCP e modelos locais ou APIs.**
+**Laboratório de arquitetura de IA corporativa: identidade, autorização, RAG, MCP e modelos locais ou APIs.**
 
-Criado por [Rodrigo Antonicci](https://github.com/Antonicci) · [Chihuahuas Studios](https://chihuahuasstudios.com/architectures/)
+[Rodrigo Antonicci](https://github.com/Antonicci) · [Chihuahuas Studios](https://chihuahuasstudios.com/architectures/)
 
-Este projeto demonstra como investigar um incidente com documentos autorizados e dados operacionais. A pergunta não define permissões: o backend valida a identidade, filtra o conhecimento, consulta ferramentas permitidas e fornece evidências para revisão humana.
+## v0.2 — identidade e permissões visíveis
 
-> **Status: v0.1 / laboratório, dados sintéticos.** Não é uma plataforma pronta para produção. O modo padrão funciona sem GPU ou API e **não usa LLM**: retorna trechos recuperados por hashing lexical. O modo Ollama/API habilita embeddings semânticos e geração real. Métricas MCP são sintéticas em todos os modos.
+O usuário se autentica, o backend resolve seu perfil, filtra os documentos e autoriza cada ferramenta. A interface mostra identidade e permissões, permite editar documentos e oferece um mapa interativo dos componentes.
 
-## O que já existe
+| Capacidade | Gestor de conhecimento | Consulta nível 1 | Consulta nível 2 |
+|---|---|---|---|
+| Consultar documentos nível 1 | Sim | Sim | Sim |
+| Consultar documentos nível 2 | Sim | Não | Sim |
+| Incluir, editar e classificar documentos | Sim | Não | Não |
+| Consultar métricas da aplicação por MCP | Não | Não | Sim |
+| Consultar métricas do assistente por MCP | Não | Não | Sim |
 
-| Capacidade | Implementação |
-|---|---|
-| Interface web | React + TypeScript; investigação, fontes, métricas e ingestão textual |
-| Backend | FastAPI, validação de entrada, credenciais e grupos definidos no servidor |
-| RAG | Chunking com overlap, embeddings, busca por similaridade e contexto com fontes |
-| Modelos | Demo extrativa, Ollama ou endpoint compatível com Chat Completions **e** Embeddings |
-| LangChain | Integrações de modelos encapsuladas no adaptador de provedor |
-| Persistência | Memória ou PostgreSQL + pgvector, seleção por configuração |
-| MCP real | SDK Python v1, transporte stdio, handshake e chamada de ferramenta pelo cliente |
-| Ferramentas | Métricas sintéticas restritas a operations; busca documental por MCP |
-| Segurança do laboratório | Filtro de grupos antes do ranking; ingestão restrita; sem ferramentas de escrita |
-| Rastreabilidade | Trace ID, duração, fontes e ferramentas; logs sem prompts, tokens ou documentos |
+Perfis: `knowledge-manager`, `query-l1`, `query-l2`. Perfis concedem permissões; documentos têm classificação `level1` ou `level2`. A autorização acontece no servidor e também no worker MCP. Quem possui múltiplos perfis acumula permissões; os usuários iniciais têm um perfil cada.
 
-O fluxo web usa RAG diretamente e MCP para métricas. O servidor MCP também expõe busca documental para clientes externos locais. Em memória, essa busca vê somente o corpus empacotado; para compartilhar documentos ingeridos pela web entre processos, use PostgreSQL.
+> Laboratório com dados sintéticos. A resposta padrão é extrativa, **sem LLM**, e usa hashing lexical. Ollama/API habilitam geração e embeddings reais. Métricas da aplicação investigada são sintéticas. Métricas operacionais do assistente são medidas; custo, tokens e qualidade ainda não são medidos.
 
-## Experimente em poucos minutos
+## Opção 1 — executar a demonstração sem provedor de identidade
 
-Pré-requisitos: Git e Docker com Compose. Para desenvolvimento sem Docker: Python 3.11+ e Node 22.12+.
+Pré-requisitos: Git e Docker Compose.
 
-```bash
+```powershell
 git clone https://github.com/Antonicci/enterprise-ai-workbench.git
 cd enterprise-ai-workbench
-cp .env.example .env
+Copy-Item .env.example .env
 docker compose up --build
 ```
 
-No PowerShell, use `Copy-Item .env.example .env` no lugar de `cp` se preferir.
+No Linux/macOS, use `cp .env.example .env`. Abra **http://localhost:8080**.
 
-Abra **http://localhost:8080**, clique em **Conectar** e pergunte:
+| Token público de laboratório | Perfil |
+|---|---|
+| demo-analyst | Consulta nível 1 |
+| demo-ops | Consulta nível 2 |
+| demo-manager | Gestor de conhecimento |
 
-> Como investigar erros HTTP 500 na API de pedidos?
+Digite o token e clique em **Conectar**. Eles existem somente no modo demo e não são aceitos no modo OIDC.
 
-1. Com `demo-analyst`, confira o runbook e as fontes.
-2. Troque a credencial para `demo-ops` e conecte novamente.
-3. Habilite **Consultar métricas via MCP** e repita a consulta.
-4. Veja a execução `get_service_metrics`, o horário da coleta e os dados sintéticos.
-5. Em **Conhecimento**, adicione um texto sintético e consulte-o.
+## Opção 2 — login real com Keycloak local
 
-As credenciais demo são públicas e só podem ser usadas com dados sintéticos em máquina local. A interface mantém a credencial em memória; não a persiste no navegador.
+A partir da raiz, com `.env` criado:
 
-## Executar com Ollama e vetores persistentes
+```powershell
+docker compose -f compose.yaml -f compose.oidc.yaml up --build
+```
 
-1. Instale o Ollama no host e baixe um modelo de chat e outro de embeddings:
+Aguarde o Keycloak terminar o startup. Abra **http://localhost:8080** e clique em **Entrar com SSO**. Use **localhost**, pois as URLs de callback e o emissor foram registrados para esse hostname.
+
+| Usuário Keycloak | Perfil | Senha pública de laboratório |
+|---|---|---|
+| gestor | Gestor de conhecimento | Workbench-Lab-2026! |
+| consulta1 | Consulta nível 1 | Workbench-Lab-2026! |
+| consulta2 | Consulta nível 2 | Workbench-Lab-2026! |
+
+Admin local: http://localhost:8180/admin — usuário `admin`, senha `Workbench-Admin-Lab-2026!`. Essas contas são públicas, para dados sintéticos e acesso loopback. O Keycloak usa `start-dev` e HTTP; isso não é configuração de produção.
+
+Fluxo: Authorization Code + PKCE, access token destinado à API, validação RS256/JWKS, emissor, audiência e expiração. Tokens ficam em memória no navegador; estado temporário de login/PKCE usa sessionStorage. Recarregar a página exige entrar novamente; a sessão SSO pode evitar nova senha. Não há renovação automática de token.
+
+O volume `keycloakdata` preserva usuários e configurações. A importação inicial não atualiza um realm já existente. Consulte [identidade e migração](docs/08-identity-and-profiles.md).
+
+## Roteiro visual
+
+1. Entre como consulta1 e investigue erros HTTP 500 na API de pedidos. Veja somente fontes nível 1.
+2. Como consulta2, habilite métricas: a API chama `get_service_metrics` por MCP stdio.
+3. Em **Observabilidade**, consulte `get_ai_quality_metrics`: contadores reais do backend, sem dados inventados de custo/qualidade.
+4. Como gestor, abra **Conhecimento**, selecione um documento, edite e salve. A reindexação atualiza conteúdo e classificação.
+5. Crie um documento nível 2. Ele não aparece nem na biblioteca, leitura direta ou contexto RAG de consulta1.
+6. Abra **Arquitetura**, selecione um fluxo e clique nos componentes. O mapa é explicativo; não representa tracing ao vivo.
+
+## Modelos e persistência
+
+Backend FastAPI/Python, frontend React/TypeScript, adaptadores LangChain, MCP Python SDK **v1**, PostgreSQL + pgvector opcional.
+
+Para Ollama no host:
 
 ```bash
 ollama pull qwen2.5:3b
 ollama pull nomic-embed-text
 ```
 
-2. Em `.env`, configure `PROVIDER=ollama`, `STORE=postgres` e substitua `AUTH_TOKENS` por tokens aleatórios longos. Exemplo de formato (substitua os valores, não os use):
-
-```dotenv
-AUTH_TOKENS={"SUBSTITUA_ANALYST":["employees"],"SUBSTITUA_OPS":["employees","operations"]}
-```
-
-3. Inicie o banco e aguarde estar saudável antes do backend:
+Configure `PROVIDER=ollama`, `STORE=postgres` em `.env`. Se usar AUTH_MODE=demo com um provedor real, substitua os tokens públicos por valores aleatórios. No modo OIDC não são usados tokens estáticos.
 
 ```bash
 docker compose --profile vector up -d --wait db
-docker compose --profile vector ps
 docker compose --profile vector up --build backend frontend
 ```
 
-A URL do Ollama no exemplo é `http://host.docker.internal:11434`. No Linux, o daemon precisa aceitar conexões da rede Docker; restrinja esse acesso à rede necessária. Nunca exponha a porta do Ollama à internet. Alternativamente, execute o backend no host e use `http://localhost:11434`.
+Para combinar SSO, inclua `-f compose.yaml -f compose.oidc.yaml` nos dois comandos. `.env.example` aponta Ollama para `http://host.docker.internal:11434`. Em Linux, valide o acesso da rede Docker ao host sem expor Ollama à internet. Se executar o backend no host, use `http://localhost:11434`.
 
-O modelo 3B quantizado é um ponto inicial para hardware limitado; consumo e latência dependem de contexto, quantização e concorrência. Valide antes de ampliar. Após baixar imagens, dependências e modelos, o modo local pode operar sem API externa; teste o egress antes de declará-lo offline.
+API corporativa: configure `PROVIDER=openai-compatible`, `API_BASE_URL`, `API_KEY`, `CHAT_MODEL`, `EMBEDDING_MODEL`. Exige contratos compatíveis de Chat Completions e Embeddings. Provedores com protocolos/autenticação diferentes precisam de adaptador. Ingestão e consultas podem enviar dados ao provedor: política de dados vem antes da conexão.
 
-## Usar uma API corporativa
+## Atualização de quem já usou v0.1
 
-Configure `PROVIDER=openai-compatible`, `API_BASE_URL`, `API_KEY`, `CHAT_MODEL` e `EMBEDDING_MODEL`. O endpoint precisa suportar os contratos de chat e embeddings usados pelos adaptadores. **Isso não garante compatibilidade automática com Azure, Bedrock ou qualquer gateway**; endpoints com autenticação/protocolo diferente precisam de adaptador próprio.
+```powershell
+git pull --ff-only
+```
 
-Nesse modo, trechos e perguntas são enviados ao provedor; textos completos também são enviados para embeddings durante a ingestão. Exija aprovação de dados e contrato do provedor. Não há fallback automático entre nuvem e local.
+Preserve seu `.env`. Para os três tokens demo, atualize **somente** AUTH_TOKENS conforme `.env.example` e adicione AUTH_MODE=demo. Ou use o overlay Keycloak, que ativa OIDC sem depender de tokens demo. Os grupos antigos employees/operations são aceitos somente no modo demo como aliases para consulta1/consulta2; `demo-ops` agora não edita documentos.
 
-## Desenvolvimento local
+A v0.2 usa namespace `acl-v2`: vetores antigos não são reaproveitados com novas permissões. Documentos próprios da v0.1 devem ser exportados e reingeridos com classificação explícita. O corpus sintético é criado no namespace novo. Edições da v0.2 não são sobrescritas pelo seed no startup. Memória continua volátil; use PostgreSQL para persistência.
+
+## Desenvolvimento e verificação
+
+Python 3.11+ e Node 22.12+. A partir da raiz:
 
 ```bash
 python -m venv .venv
-# Linux/macOS:
-source .venv/bin/activate
-# PowerShell: .venv\Scripts\Activate.ps1
+# Ative .venv para seu sistema operacional.
 pip install -r backend/requirements.lock
 pip install --no-deps -e ./backend
-# A partir da raiz, sem .env usa demo em memória.
 uvicorn workbench.main:app --host 127.0.0.1 --port 8000
 ```
 
-Em outro terminal:
-
-```bash
-cd frontend
-npm ci
-npm run dev
-```
-
-Abra http://localhost:5173. O Vite encaminha `/api` para o backend, sem exigir CORS amplo.
-
-Se copiar `.env.example` para executar no host, ajuste URLs: `OLLAMA_BASE_URL=http://localhost:11434`; o banco do Compose não publica porta no host. Use banco local ou um túnel/override explícito.
-
-## Verificação
+Outro terminal: `cd frontend`, `npm ci`, `npm run dev` → http://localhost:5173. O Vite encaminha a API. Para desenvolvimento no host com OIDC, configure JWKS para localhost:8180, não o hostname interno keycloak.
 
 ```bash
 python -m pytest backend/tests -q
 cd frontend
-npm ci
 npm run build
+# Com o Compose em execução e Chromium Playwright instalado:
+npm run test:e2e
+# Para testes de login Keycloak, defina AUTH_TEST_MODE=oidc antes do comando.
 ```
 
-O [workflow validado](https://github.com/Antonicci/enterprise-ai-workbench/actions/runs/44102828104) passou com os **13 testes**, incluindo PostgreSQL/pgvector, build do frontend e execução Docker Compose através do Nginx com RAG + MCP.
+[GitHub Actions](https://github.com/Antonicci/enterprise-ai-workbench/actions) executa testes, PostgreSQL, builds, Compose e testes de navegador com os três perfis em demo e OIDC. Consulte [evidências e limites](docs/07-validation.md); configurar uma verificação não equivale a obter aprovação.
 
-Os testes cobrem isolamento de documentos, autenticação, restrição das ferramentas, ingestão, substituição de documentos e chamadas MCP pelo protocolo real. Não substituem avaliação de qualidade de LLM nem teste de carga. Veja [validação](docs/07-validation.md).
+## Documentação corporativa
 
-## Trilha corporativa
+- [Discovery e escopo](docs/01-discovery-and-scope.md)
+- [Escolha de técnicas](docs/02-solution-selection.md)
+- [Arquitetura](docs/03-architecture.md)
+- [Segurança](docs/04-security.md)
+- [Implantação passo a passo](docs/05-implementation-guide.md)
+- [Avaliação e operação](docs/06-evaluation-and-operations.md)
+- [Identidade, perfis e Entra ID](docs/08-identity-and-profiles.md)
+- [Decisões](docs/adr/0002-identity-and-authorization.md) e [roadmap](ROADMAP.md)
 
-1. [Discovery e escopo](docs/01-discovery-and-scope.md)
-2. [Escolha entre regras, ML, LLM, RAG e MCP](docs/02-solution-selection.md)
-3. [Arquitetura e limites](docs/03-architecture.md)
-4. [Segurança e modelo de ameaças](docs/04-security.md)
-5. [Implementação passo a passo](docs/05-implementation-guide.md)
-6. [Avaliação e operação](docs/06-evaluation-and-operations.md)
-7. [Evidências de validação](docs/07-validation.md)
-8. [Decisões arquiteturais](docs/adr/0001-modular-monolith.md)
-9. [Roadmap](ROADMAP.md)
+## Limites
 
-## Limitações que fazem parte do desenho
-
-- Credenciais estáticas de laboratório; OIDC/SSO, RLS, isolamento multitenant e auditoria durável ainda não implementados.
-- Fontes retornadas são evidências recuperadas, não comprovação automática de cada frase gerada. O modelo pode alucinar ou ignorar instruções.
-- Corpus empacotado é reindexado no startup. Ingestões em memória desaparecem ao reiniciar; documentos com IDs do corpus são restaurados no startup.
-- Chunking por caracteres e busca exata; sem parsing de PDF, reranker, HNSW, ingestão assíncrona ou detecção de prompt injection dedicada.
-- Timeout de requisição não interrompe necessariamente uma operação síncrona já iniciada em thread; não há controle global de concorrência/quotas.
-- Logs de aplicação não são um sistema de auditoria imutável. Não há monitoramento contínuo, integração real de incidentes ou ações autônomas.
-- O MCP está fixado no SDK **v1**; a migração para v2 exige revisão de protocolo e APIs.
-
-Nenhum dado real de cliente, credencial ou documento empresarial deve ser incluído no repositório.
+Sem multitenancy, RLS, exclusão documental, auditoria durável, ingestão assíncrona, quotas ou SLA. OIDC não transforma esse laboratório em ambiente de produção. PostgreSQL usa busca exata e credenciais LAB. O MCP é um worker local confiável, não um servidor remoto autenticado multiusuário. Custo/qualidade de modelo e MLOps preditivo não foram implementados. Timeout não garante cancelamento de trabalho síncrono em andamento. Nunca versionar segredos ou dados reais de clientes.

@@ -1,4 +1,4 @@
-# Avaliação e operação
+# Avaliação e operação — v0.2
 
 ## O que medir
 
@@ -22,7 +22,7 @@ Começar com perguntas sobre pedidos, pagamentos, ações que exigem aprovação
 
 Resposta inclui trace_id, elapsed_ms, provider, citations e tool_calls. Logs de aplicação incluem sujeito pseudonimizado, contagens e duração. As métricas MCP incluem serviço, janela e observed_at; os valores são fixtures sintéticas, não uma leitura de infraestrutura.
 
-Ainda faltam OpenTelemetry, uso/custo de tokens, dashboards, auditoria persistente e alertas. Um trace ID sozinho não comprova auditabilidade de ponta a ponta.
+A v0.2 adiciona dashboard e get_ai_quality_metrics com contadores reais por processo: consultas, falhas de execução, fontes, chamadas de ferramenta e média/p95 das últimas 500 latências. Tokens, custo, groundedness e recall são explicitamente não medidos. Ainda faltam OpenTelemetry, uso/custo de tokens, auditoria persistente e alertas. Um trace ID sozinho não comprova auditabilidade de ponta a ponta.
 
 ## Disponibilidade e falhas
 
@@ -30,7 +30,7 @@ Sem fonte, o assistente informa a lacuna. Falha de dependência gera 503; não h
 
 ## Retenção e lifecycle
 
-O corpus empacotado é sintético e reindexado ao iniciar. Em memória, novas ingestões se perdem. PostgreSQL persiste em volume Compose; apagar o volume remove o corpus armazenado. A v0.1 não tem API de exclusão, revisão de versões ou política de retenção. Dados reais exigem esses mecanismos, inclusive remoção dos vetores derivados e tratamento de backups.
+O corpus empacotado é sintético e indexado apenas se ausente ao iniciar. Em memória, novas ingestões se perdem. PostgreSQL persiste em volume Compose; apagar o volume remove o corpus armazenado. A v0.1 não tem API de exclusão, revisão de versões ou política de retenção. Dados reais exigem esses mecanismos, inclusive remoção dos vetores derivados e tratamento de backups.
 
 ## Extensão de monitoramento com ML
 

@@ -13,9 +13,9 @@ class Retrieval:
         parts = [document.text[start:start+900] for start in range(0,len(document.text),750)]
         vectors = self.provider.embed(parts)
         chunks = [Chunk(id=f"{document.id}-{i+1}",document_id=document.id,title=document.title,
-                        text=text,groups=document.groups,vector=vector)
+                        text=text,groups=[document.access_level],vector=vector)
                   for i,(text,vector) in enumerate(zip(parts,vectors,strict=True))]
-        self.store.replace(document.id,chunks)
+        self.store.replace(document.id,chunks,document)
         return len(chunks)
     def search(self,query,groups):
         return self.store.search(self.provider.embed([query])[0],groups,self.settings.top_k)

@@ -1,15 +1,31 @@
 """Authorization is applied before ranking and before context construction."""
 import math
-from .models import Chunk, Citation
+from .models import Chunk, Citation, DocumentInput
+from threading import RLock
 
 class MemoryStore:
     def __init__(self):
         self.chunks: dict[str, Chunk] = {}
-    def replace(self, document_id: str, chunks: list[Chunk]):
-        self.chunks = {k:v for k,v in self.chunks.items() if v.document_id != document_id}
-        self.chunks.update({c.id:c for c in chunks})
+        self.documents: dict[str, DocumentInput] = {}
+        self.lock = RLock()
+    def replace(self, document_id: str, chunks: list[Chunk], document: DocumentInput):
+        with self.lock:
+            self.chunks = {k:v for k,v in self.chunks.items() if v.document_id != document_id}
+            self.chunks.update({c.id:c for c in chunks})
+            self.documents[document_id] = document
+    def list_documents(self,groups):
+        with self.lock:
+            return [d.model_copy(deep=True) for d in self.documents.values() if d.access_level in groups]
+    def get_document(self,document_id,groups):
+        with self.lock:
+            d = self.documents.get(document_id)
+            return d.model_copy(deep=True) if d and d.access_level in groups else None
+    def has_document(self,document_id):
+        with self.lock:
+            return document_id in self.documents
     def search(self, vector, groups, top_k):
-        allowed = [c for c in self.chunks.values() if set(groups).intersection(c.groups)]
+        with self.lock:
+            allowed = [c for c in self.chunks.values() if set(groups).intersection(c.groups)]
         def similarity(c):
             dot = sum(a*b for a,b in zip(vector,c.vector,strict=True))
             norm = math.sqrt(sum(x*x for x in vector)*sum(x*x for x in c.vector)) or 1
@@ -31,9 +47,27 @@ class PostgresStore:
                 namespace text NOT NULL, id text NOT NULL, document_id text NOT NULL,
                 title text NOT NULL, body text NOT NULL, groups text[] NOT NULL,
                 embedding vector NOT NULL, PRIMARY KEY(namespace,id))""")
-    def replace(self,document_id,chunks):
+            conn.execute("""CREATE TABLE IF NOT EXISTS documents (
+                namespace text NOT NULL, id text NOT NULL, title text NOT NULL,
+                body text NOT NULL, access_level text NOT NULL,
+                PRIMARY KEY(namespace,id))""")
+    def list_documents(self,groups):
         import psycopg
         with psycopg.connect(self.dsn) as conn:
+            rows = conn.execute("SELECT id,title,body,access_level FROM documents WHERE namespace=%s AND access_level=ANY(%s)",(self.namespace,list(groups))).fetchall()
+        return [DocumentInput(id=a,title=b,text=c,access_level=d) for a,b,c,d in rows]
+    def get_document(self,document_id,groups):
+        return next((d for d in self.list_documents(groups) if d.id==document_id),None)
+    def has_document(self,document_id):
+        import psycopg
+        with psycopg.connect(self.dsn) as conn:
+            return conn.execute("SELECT 1 FROM documents WHERE namespace=%s AND id=%s",(self.namespace,document_id)).fetchone() is not None
+    def replace(self,document_id,chunks,document):
+        import psycopg
+        with psycopg.connect(self.dsn) as conn:
+            conn.execute("""INSERT INTO documents VALUES (%s,%s,%s,%s,%s)
+                ON CONFLICT(namespace,id) DO UPDATE SET title=EXCLUDED.title,body=EXCLUDED.body,access_level=EXCLUDED.access_level""",
+                (self.namespace,document.id,document.title,document.text,document.access_level))
             conn.execute("DELETE FROM chunks WHERE namespace=%s AND document_id=%s",(self.namespace,document_id))
             for c in chunks:
                 conn.execute("INSERT INTO chunks VALUES (%s,%s,%s,%s,%s,%s,%s::vector)",

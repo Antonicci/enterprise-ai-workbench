@@ -25,7 +25,7 @@ def test_authentication_is_required(client):
     assert client.post('/api/chat',json={'question':'runbook'}).status_code == 401
     assert client.get('/api/config',headers=headers('invalid')).status_code == 401
     cfg = client.get('/api/config',headers=headers()).json()
-    assert cfg['groups'] == ['employees']
+    assert cfg['groups'] == ['level1']
     assert 'auth_tokens' not in cfg
 
 def test_restricted_source_never_enters_model_context(client):
@@ -49,14 +49,14 @@ def test_metrics_denied_before_tool_call(client,monkeypatch):
     tool.assert_not_called()
 
 def test_ingestion_and_replacement(client):
-    doc={'id':'new-doc','title':'Runbook Zephyr','text':'Zephyr utiliza uma fila dedicada para processamento de faturamento sintético.','groups':['employees']}
+    doc={'id':'new-doc','title':'Runbook Zephyr','text':'Zephyr utiliza uma fila dedicada para processamento de faturamento sintético.','access_level':'level1'}
     assert client.post('/api/documents',headers=headers(),json=doc).status_code==403
-    assert client.post('/api/documents',headers=headers('demo-ops'),json={**doc,'groups':['finance']}).status_code==403
-    assert client.post('/api/documents',headers=headers('demo-ops'),json=doc).status_code==200
+    assert client.post('/api/documents',headers=headers('demo-manager'),json={**doc,'access_level':'finance'}).status_code==422
+    assert client.post('/api/documents',headers=headers('demo-manager'),json=doc).status_code==200
     r=client.post('/api/chat',headers=headers(),json={'question':'Zephyr fila faturamento'})
     assert any(c['document_id']=='new-doc' for c in r.json()['citations'])
-    restricted={**doc,'text':'Zephyr agora usa um procedimento restrito de operações.','groups':['operations']}
-    assert client.post('/api/documents',headers=headers('demo-ops'),json=restricted).status_code==200
+    restricted={**doc,'text':'Zephyr agora usa um procedimento restrito de operações.','access_level':'level2'}
+    assert client.post('/api/documents',headers=headers('demo-manager'),json=restricted).status_code==200
     r=client.post('/api/chat',headers=headers(),json={'question':'Zephyr procedimento'})
     assert all(c['document_id']!='new-doc' for c in r.json()['citations'])
 
@@ -90,7 +90,7 @@ async def mcp_session_call(token,tool,args):
         async with ClientSession(read,write) as session:
             await session.initialize()
             tools=await session.list_tools()
-            assert {'search_documents','get_service_metrics'}=={t.name for t in tools.tools}
+            assert {'search_documents','get_service_metrics','get_ai_quality_metrics'}=={t.name for t in tools.tools}
             return await session.call_tool(tool,args)
 
 @pytest.mark.asyncio
@@ -118,10 +118,10 @@ def test_postgres_authorization_and_replace():
     settings=Settings(_env_file=None,store='postgres',database_url=os.environ['TEST_DATABASE_URL'])
     retrieval=Retrieval(settings)
     seed(retrieval)
-    assert not any(c.document_id=='ops-internal' for c in retrieval.search('OPS-RESTRICTED-7391 operações',['employees']))
-    assert any(c.document_id=='ops-internal' for c in retrieval.search('OPS-RESTRICTED-7391 operações',['operations']))
-    doc=DocumentInput(id='integration-replace',title='Zephyr',text='Zephyr faturamento fila dedicada sintética.',groups=['employees'])
+    assert not any(c.document_id=='ops-internal' for c in retrieval.search('OPS-RESTRICTED-7391 operações',['level1']))
+    assert any(c.document_id=='ops-internal' for c in retrieval.search('OPS-RESTRICTED-7391 operações',['level2']))
+    doc=DocumentInput(id='integration-replace',title='Zephyr',text='Zephyr faturamento fila dedicada sintética.',access_level='level1')
     retrieval.ingest(doc)
-    assert any(c.document_id==doc.id for c in retrieval.search('Zephyr faturamento',['employees']))
-    retrieval.ingest(doc.model_copy(update={'groups':['operations']}))
-    assert not any(c.document_id==doc.id for c in retrieval.search('Zephyr faturamento',['employees']))
+    assert any(c.document_id==doc.id for c in retrieval.search('Zephyr faturamento',['level1']))
+    retrieval.ingest(doc.model_copy(update={'access_level':'level2'}))
+    assert not any(c.document_id==doc.id for c in retrieval.search('Zephyr faturamento',['level1']))

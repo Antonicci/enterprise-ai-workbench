@@ -1,52 +1,47 @@
-# Arquitetura
-
-Monólito modular com frontend separado. O processo MCP é uma fronteira de protocolo, não um microserviço distribuído obrigatório. Docker Compose é o ambiente de laboratório.
+# Arquitetura de componentes — v0.2
 
 ```mermaid
 flowchart TD
-    U["Usuário"] --> UI["React / TypeScript"]
-    UI --> API["FastAPI: identidade e políticas"]
-    API --> R["Recuperação autorizada"]
-    R --> E["Adaptador de embeddings"]
-    R --> V["Memória ou PostgreSQL / pgvector"]
-    API --> M["Cliente MCP stdio"]
-    M --> T["Servidor MCP: métricas sintéticas"]
-    API --> G["Geração com evidências"]
-    G --> L["Demo, Ollama ou API"]
+    UI["Frontend React"] --> IDP["Keycloak ou Entra ID / OIDC"]
+    UI --> API["FastAPI / validação do access token"]
+    IDP -. "JWKS configurado" .-> API
+    API --> POLICY["Perfis e permissões por ação"]
+    POLICY --> RAG["RAG: documentos filtrados por nível"]
+    POLICY --> ING["Ingestão e edição / gestor"]
+    POLICY --> MCP["Cliente MCP / worker stdio confiável"]
+    RAG --> EMB["Embeddings / adaptador LangChain ou demo"]
+    ING --> EMB
+    EMB --> STORE["Memória ou PostgreSQL + pgvector"]
+    RAG --> STORE
+    RAG --> ANSWER["Resposta com evidências"]
+    MCP --> SERVICE["Métricas sintéticas da aplicação"]
+    MCP --> AI["Contadores reais do assistente"]
+    MCP --> ANSWER
+    ANSWER --> MODEL["Extrativa, Ollama ou API"]
 ```
 
-## Fluxo de consulta
+A UI inclui mapa interativo dos fluxos login, consulta RAG, ingestão e ferramentas. Ele explica topologia; não anima tráfego real.
 
-1. Validar Bearer e resolver grupos pela configuração do servidor.
-2. Se houver pedido de métricas, exigir operations antes de chamar dependências.
-3. Gerar embedding da pergunta e filtrar documentos por interseção de grupos antes do ranking.
-4. Selecionar até TOP_K trechos e, se solicitado, chamar MCP com serviço em allowlist.
-5. Construir contexto com evidências. O modelo não pode escolher comandos, servidores ou ferramentas.
-6. Retornar resposta, trechos recuperados, métricas, trace e duração. A interface renderiza texto sem HTML/Markdown executável.
+## Separação de responsabilidades
 
-## Fronteiras
+- Identidade: token OIDC validado ou credencial demo, nunca ambos no modo OIDC.
+- Política: perfis conhecidos concedem permissões; documentos têm nível 1/2. Nível 2 e gestor leem ambos; apenas gestor escreve; apenas nível 2 lê métricas.
+- RAG: chunking 900 caracteres com passo 750, embeddings e busca cosseno. Filtra nível antes do ranking/contexto. A demo usa hashing lexical.
+- Persistência: documento original e chunks atualizados juntos em transação PostgreSQL; armazenamento em memória com lock no laboratório. Busca exata, sem índice aproximado.
+- Provedor: LangChain encapsulado no adaptador. A autorização não depende da biblioteca nem do modelo.
+- Ferramentas: solicitação explícita, allowlist e validação de permissão na API e no worker. O modelo não executa comandos.
+- Observabilidade: contadores por processo e snapshot enviado ao worker MCP. Não é consulta a um banco de telemetria ou avaliação automática de qualidade.
 
-| Fronteira | Confiança e controle |
-|---|---|
-| Navegador → API | Pergunta e texto são não confiáveis; validação e autorização no servidor |
-| API → documentos | Metadados atribuídos por operações; acesso OR entre grupos |
-| API → provedor | Conteúdo pode deixar o ambiente no modo API; aprovação de dados é pré-requisito |
-| API → MCP | Executável fixo, ambiente explícito, credencial fora dos argumentos da ferramenta |
-| MCP → métricas | Fixture sintética; nenhuma chamada a ambiente real |
-| Aplicação → banco | Consultas parametrizadas, namespace por embedding; credencial LAB |
+## Fronteiras de confiança
 
-## Persistência e recuperação
+Navegador é não confiável. Documentos e respostas também. IdP tem emissor/audiência/chaves configurados. Worker MCP stdio é um subprocesso da mesma aplicação; não é MCP remoto. Provedores de IA recebem dados apenas conforme configuração e política aprovada. Banco usa parâmetros SQL e namespace acl-v2.
 
-A busca em memória usa similaridade de cosseno. Demo tem hashing lexical de 256 dimensões; Ollama/API usam embeddings do provedor. PostgreSQL armazena vetores e metadados e usa `groups && grupos_do_usuario` junto ao namespace antes do ranking. Não há índice aproximado na v0.1: priorizamos exatidão e auditoria em corpus pequeno. Aumentar escala exige benchmark, índice por dimensão/modelo, RLS e controle de concorrência.
+A listagem e a leitura direta de documentos aplicam o mesmo filtro do RAG; documento não autorizado retorna 404. O gestor altera classificação e reindexa. Ingestão não aceita grupos arbitrários ou permissões do cliente.
 
-A ingestão substitui todos os chunks de um documento, em transação no PostgreSQL. A implantação de referência é de um worker; memória não compartilha estado entre workers. Servidor MCP stdio é criado por consulta de métricas; uma sessão persistente exige supervisão de ciclo de vida e isolamento de identidades.
+## Persistência e upgrade
 
-## Onde LangChain entra
+Namespace inclui provedor, modelo e acl-v2. Alterar pesos/dimensão sob o mesmo nome requer namespace novo e reindexação. Dados v0.1 ficam separados. Seed apenas cria documentos ausentes. Memória não compartilha estado entre workers e é perdida no restart; PostgreSQL é necessário para persistência e para compartilhar ingestões entre web e busca MCP em outros processos.
 
-Somente no adaptador de chat/embeddings. Autorização, corpus, ferramentas e regras permanecem em módulos próprios. Não há agente autônomo ou LangGraph nesta etapa.
+## Endpoints
 
-## MCP externo
-
-A partir da raiz, com o pacote instalado, execute `python -m workbench.mcp_server` e forneça `MCP_AUTH_TOKEN` por ambiente. Um cliente MCP stdio precisa iniciar esse comando no diretório do repositório, com o mesmo ambiente `.env` apropriado.
-
-Ferramentas: `search_documents(query)` e `get_service_metrics(service)`. O servidor usa a identidade do host local; não é um endpoint MCP remoto multiusuário. Não compartilhe um processo entre identidades. Em memória, a busca MCP reabre o corpus empacotado; PostgreSQL permite compartilhar ingestões web. Não registre tokens em configurações versionadas do cliente.
+GET /api/auth/config é público e expõe somente configuração de login. /api/config retorna identidade/permissões sem segredos. GET /api/documents lista metadados permitidos; GET /api/documents/{id} retorna texto autorizado. POST /api/documents inclui ou substitui, apenas gestor. POST /api/chat consulta RAG e opcionalmente MCP. GET /api/observability consulta ferramenta de métricas do assistente, apenas nível 2.

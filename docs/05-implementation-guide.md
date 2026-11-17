@@ -1,64 +1,39 @@
-# Implementação corporativa passo a passo
+# Implementação corporativa passo a passo — v0.2
 
-Este guia distingue o laboratório executável dos controles que uma empresa precisa implementar. Não representa aprovação para produção.
+1. **Discovery:** definir tarefa, personas, fontes, classificação, resultado esperado, orçamento e risco da resposta errada. Usar a matriz de técnicas antes de assumir que LLM é necessário.
+2. **Demo:** executar README, consultar como nível 1 e nível 2, editar como gestor. Testar negações por chamadas diretas, não apenas botões desabilitados.
+3. **Identidade:** ativar overlay Keycloak para laboratório. No piloto corporativo registrar SPA/API no IdP, configurar emissor/audiência/JWKS e atribuir perfis. Executar a matriz de acesso com tokens válidos, inválidos, expirados e de outra audiência.
+4. **Dados:** usar nível 1/2 explicitamente. O gestor inclui, abre, edita, classifica e reindexa. Para fontes corporativas, adicionar proveniência, atualização incremental, exclusão e mapeamento das permissões originais.
+5. **Modelos:** escolher Ollama local ou endpoint compatível aprovado. Testar chat e embeddings com o corpus. Não há fallback silencioso. Modelo local não prova ausência de egress.
+6. **Persistência:** iniciar banco antes do backend; namespace novo ao mudar embedding/política. Memória é só laboratório. Dados v0.1 devem ser reingeridos com classificação.
+7. **Ferramentas:** conceder permissão por ação e recurso. Nesta versão, nível 2 acessa a allowlist global. Novos serviços/equipes exigem política de recurso; ferramenta de escrita exige aprovação e identidade de destino mínima.
+8. **Avaliação:** medir fontes recuperadas, groundedness, abstinência, acesso, latência e custo instrumentado. Snapshot operacional não substitui avaliação de qualidade.
+9. **Piloto:** grupo pequeno, quotas, auditoria durável, TLS, egress limitado, backups, exclusão e responsáveis. Não publicar o Compose de laboratório na internet.
 
-## 1. Descobrir e aprovar o caso
+## Configuração
 
-Preencha escopo, personas, fontes, classificação de dados e risco de resposta errada. Escolha uma tarefa mensurável e um responsável de negócio. Entregável: escopo aprovado e casos de aceitação, incluindo negações de acesso.
-
-## 2. Selecionar a abordagem
-
-Use a matriz de técnicas. Compare busca convencional, regra e RAG. Para monitoramento, comece com limiares e dados históricos. Entregável: ADR com alternativas, custo esperado e restrições.
-
-## 3. Validar o ambiente demo
-
-Siga o README sem alterar o provedor. Verifique analyst versus operations, ingestão e MCP. Use apenas dados sintéticos. Entregável: execução reproduzível e testes passando.
-
-## 4. Ativar o provedor e a persistência
-
-Baixe modelos locais ou obtenha endpoint corporativo aprovado. Escolha chat e embedding separadamente pelo propósito. Gere credenciais de laboratório novas, configure `.env` e inicie o PostgreSQL antes do backend. Nunca versione `.env`.
-
-Exemplo de geração de token: `python -c "import secrets; print(secrets.token_urlsafe(32))"`. Gere dois valores e atribua os grupos no JSON AUTH_TOKENS. O laboratório rejeita credenciais com prefixo demo- quando o provedor real é ativado.
-
-Teste a implantação com o mesmo corpus. Se o endpoint não suportar embeddings e chat nos contratos configurados, escreva um adaptador e testes de contrato. Não use fallback remoto para contornar uma falha local sem aprovação.
-
-## 5. Integrar identidade e dados
-
-Substitua tokens por validação OIDC. Preserve identidade até a recuperação e as ferramentas. Mapeie permissões da fonte; nunca torne documento amplo por falta de metadados. Configure tenant como dimensão independente de grupo antes de qualquer uso multitenant.
-
-A v0.1 aceita texto via API/UI. Para PDFs, SharePoint e outros conectores, implemente extração, proveniência, detecção de mudanças, remoção, revisão e política de acesso. O indexador precisa de uma identidade própria e escopo mínimo.
-
-## 6. Avaliar antes de disponibilizar
-
-Monte um conjunto representativo de perguntas com fontes e respostas esperadas. Separe desenvolvimento e validação. Compare recuperação, groundedness, abstinência, segurança e custo. Registre modelo, versão, corpus e configuração. Entregável: relatório de aprovação ou lista de lacunas.
-
-## 7. Operar um piloto limitado
-
-Use grupo pequeno, quotas, métricas técnicas e feedback. Configure logs duráveis, alertas, política de retenção, backups e responsáveis. Teste falha do modelo, embeddings e banco. Defina como suspender ingestão e consultas durante incidente.
-
-## 8. Expandir somente com evidências
-
-Amplie corpus, conectores ou automação após demonstrar valor e manter os critérios de segurança. Ações operacionais devem aparecer como proposta com impacto, parâmetros e aprovação. Não tratar uma recomendação textual como uma mudança executada.
-
-## Configuração da v0.1
-
-| Variável | Uso |
+| Variável | Propósito |
 |---|---|
-| PROVIDER | demo, ollama, openai-compatible |
-| STORE | memory ou postgres |
-| AUTH_TOKENS | JSON token → grupos, resolvido no servidor |
+| AUTH_MODE | demo ou oidc; sem fallback entre os modos |
+| AUTH_TOKENS | Mapa de tokens locais → roles, usado apenas no modo demo |
+| OIDC_ISSUER | Emissor exato validado e autoridade pública usada pela SPA |
+| OIDC_JWKS_URL | URL confiável das chaves, pode usar rede interna |
+| OIDC_AUDIENCE | Audiência da API, distinta da SPA |
+| OIDC_CLIENT_ID / OIDC_SCOPE | Registro da SPA e escopos pedidos |
+| OIDC_ROLES_CLAIM | realm_access.roles no Keycloak; roles no exemplo Entra |
+| PROVIDER / STORE | demo, ollama ou openai-compatible; memory ou postgres |
 | CHAT_MODEL / EMBEDDING_MODEL | Identificadores dos modelos |
-| OLLAMA_BASE_URL | Endpoint local, definido pelo administrador |
-| API_BASE_URL / API_KEY | Endpoint corporativo compatível e segredo |
-| DATABASE_URL | DSN PostgreSQL; não expor no frontend |
-| TOP_K | 1–10 trechos por consulta |
-| REQUEST_TIMEOUT | 1–180 s; limite do fluxo, não uma quota global |
+| API_BASE_URL / API_KEY | Provedor compatível aprovado |
+| OLLAMA_BASE_URL / DATABASE_URL | Endereços acessíveis no ambiente de execução |
+| TOP_K / REQUEST_TIMEOUT | Limites de recuperação e prazo do fluxo |
 
-## Recuperação e troubleshooting
+## Troubleshooting
 
-- **401:** confirme token e AUTH_TOKENS. Não envie a credencial em issue.
-- **403:** verifique grupos; não altere autorização para contornar erro.
-- **503:** use trace e logs locais; confira modelo baixado, endpoint, rede e banco. Erros detalhados não são expostos ao usuário.
-- **Startup falha:** banco indisponível, modelo de embeddings ausente ou configuração inválida. O startup reindexa o corpus, portanto depende de embeddings no modo real.
-- **Documento desapareceu:** memória é volátil; IDs do corpus são restaurados no startup. Use IDs novos e PostgreSQL para persistência.
-- **Vetores incompatíveis:** reindexe em namespace novo ao trocar pesos/dimensão; não compare embeddings de modelos diferentes.
+- 401: token inválido/expirado, audiência/emissor incorretos ou JWKS inacessível. Token demo é recusado em OIDC.
+- 403: perfil não atribuído ou permissão insuficiente. Gestor não consulta métricas; nível 2 não edita.
+- 404 documental: documento inexistente ou fora do nível permitido.
+- Callback rejeitado: usar localhost:8080 ou localhost:5173; registrar exatamente /auth/callback no IdP.
+- Interface perdeu sessão após reload: tokens ficam em memória; clique Entrar com SSO novamente.
+- Realm não mudou após atualizar JSON: volume já contém realm, importação não substitui; administrar ou recriar apenas o armazenamento de identidade após backup.
+- 503: dependência indisponível; usar trace e logs locais sem publicar tokens. No startup, embeddings e banco precisam estar disponíveis no modo real.
+- Documento antigo não aparece: namespace acl-v2; reingerir com classificação. Não mapear permissões antigas silenciosamente.

@@ -12,9 +12,12 @@
 
 - [ ] Executar e publicar benchmark de modelos na RTX 4050, sem estimativas apresentadas como resultado.
 - [ ] Corpus de avaliação versionado e relatório de recuperação/geração.
-- [ ] OIDC, rate limiting, concorrência limitada e tracing distribuído.
+- [x] OIDC/Keycloak, três perfis, edição e autorização por ferramenta.
+- [x] Mapa interativo de componentes e contadores medidos do assistente.
+- [ ] Rate limiting, concorrência limitada e tracing distribuído.
 - [ ] Ingestão assíncrona, exclusão, proveniência e versionamento.
-- [ ] Testes de carga e de falha; CI com PostgreSQL e MCP.
+- [x] CI com PostgreSQL, MCP e cenários de navegador demo/OIDC.
+- [ ] Testes de carga e falhas de infraestrutura.
 
 ## v0.3 — Monitoramento e interoperabilidade
 

@@ -1,36 +1,23 @@
-# Discovery e análise de escopo
+# Discovery e escopo — v0.2
 
-## Caso de negócio
+O caso é apoiar investigação de incidentes com runbooks autorizados e sinais operacionais. O assistente reúne evidências; a pessoa decide e executa a mitigação fora do laboratório.
 
-Um analista precisa reunir runbooks e sinais operacionais para investigar falhas. O custo atual é o tempo de localizar documentos, conferir acesso e reconstruir contexto. O assistente oferece evidências; o responsável decide e executa a mitigação fora deste laboratório.
+## Perguntas antes da implementação
 
-| Pergunta de discovery | Resposta do laboratório | Decisão necessária na empresa |
-|---|---|---|
-| Quem usa? | employees e operations | Personas, grupos no IdP e responsáveis |
-| Qual decisão é apoiada? | Próximos passos de investigação | Risco de resposta incorreta e aprovação |
-| Que dados entram? | Runbooks e métricas sintéticas | Classificação, consentimento, retenção e residência |
-| Quais integrações? | MCP local somente leitura | Dono, contrato, SLA e permissões por integração |
-| Como medir valor? | Qualidade de recuperação e tempo da consulta | Tempo de investigação antes/depois e adoção |
-| Qual orçamento? | Laboratório sem compromisso de SLA | Tokens, embeddings, banco, GPU e operação |
-| Pode sair da rede? | Configurável local/API | Egress permitido e termos do provedor |
+Quem consulta? Quem edita? Quais documentos são restritos? Quais ferramentas cada perfil pode chamar? Quais dados podem sair da rede? Como medir tempo economizado e risco de resposta errada? Quem aprova mudanças de acesso e quais ações exigem aprovação humana?
 
-## Dentro da v0.1
+## Escopo entregue
 
-Consulta textual, ingestão de texto, grupos definidos no servidor, corpus pequeno, fontes com IDs, métricas sintéticas MCP, troca de provedor, busca em memória ou pgvector, interface e documentação reproduzível.
-
-## Fora da v0.1
-
-Remediação automática, agentes autônomos, leitura arbitrária de disco/URLs, múltiplos tenants, conector de SharePoint, PDF/OCR, produção de alertas contínuos, SLA, treinamento ou fine-tuning.
+Três perfis, tokens demo ou OIDC/Keycloak, fontes nível 1/2, biblioteca com edição, resposta extrativa ou adaptadores LLM, RAG, ferramentas MCP de leitura, contadores medidos do assistente e mapa visual. Sem automação de remediação ou monitoramento contínuo.
 
 ## Critérios de aceitação
 
-- Analista consulta documentos employees e não recebe marcador restrito, nem no contexto do provedor.
-- Operações consulta o documento restrito e solicita métricas por MCP.
-- Chamadas diretas à API não contornam os controles da interface.
-- Modelo e embeddings podem ser configurados sem alterar regras de autorização.
-- Falha do provedor gera erro explícito, sem resposta fabricada de contingência.
-- A demonstração declara dados sintéticos e distingue recuperação lexical de semântica.
+- Consulta1 não recebe documentos nível2 em listagem, leitura direta ou contexto do modelo.
+- Consulta2 lê ambos os níveis e métricas, sem escrita documental.
+- Gestor inclui/edita/classifica ambos os níveis, sem métricas operacionais.
+- OIDC valida token e não aceita fallback demo. Permissões do cliente não são confiadas.
+- Ferramentas verificam identidade novamente no worker da mesma aplicação.
+- Mudança de classificação remove o documento do acesso anterior na recuperação seguinte.
+- UI separa métrica sintética, contador medido e qualidade/custo não medidos.
 
-## Evolução de escopo
-
-Só adicionar um conector quando houver caso de uso, dono, autorização, contrato e critério de avaliação. Um novo modelo exige comparar qualidade, latência, custo e capacidade de executar com os dados permitidos. Uma ação de escrita exige análise de impacto, idempotência, aprovação e recuperação. Não transformar uma ferramenta de estudo em ambiente corporativo apenas trocando credenciais.
+Fora do escopo: multitenancy, RLS, ações externas, PDF/OCR, fine-tuning, detector preditivo, auditoria imutável e SLA. Entra ID tem guia e fronteira configurável; validação com tenant real é uma etapa própria.

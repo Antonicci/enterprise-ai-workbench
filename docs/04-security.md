@@ -1,44 +1,35 @@
-# Segurança e modelo de ameaças
+# Segurança — v0.2
 
-## Implementado no laboratório
+## Implementado
 
-- Bearer obrigatório nos endpoints de negócio. Tokens são comparados no servidor; grupos não são aceitos do cliente.
-- Ingestão e métricas exigem operations. Ingestão só pode atribuir grupos pertencentes ao autor.
-- Documento é visível quando pelo menos um grupo coincide. Aplicar esse filtro antes de construir contexto é obrigatório.
-- Restrição equivalente dentro do servidor MCP; esconder um botão não é controle de segurança.
-- Ferramentas de leitura com serviços em allowlist. Nenhum shell, URL, comando ou servidor arbitrário vindo do usuário.
-- Pergunta limitada a 2.000 caracteres; texto por documento limitado a 30.000; corpo no Nginx limitado a 256 KB.
-- SQL parametrizado; namespaces de vetores por provedor/modelo; transação na substituição.
-- UI renderiza texto com escape do React. Tokens somente em memória; sem dependências externas de fontes/scripts.
-- Logs registram IDs, duração e contagens, sem conteúdo e sem credenciais. Falhas devolvem mensagem genérica e trace.
-- Portas Compose publicadas somente em loopback. Banco não é publicado no host. Contêiner backend sem root.
+- OIDC Authorization Code + PKCE no navegador; access token validado por RS256/JWKS, emissor, audiência, expiração e campos obrigatórios no backend.
+- Emissor/JWKS configurados pelo administrador; nenhum endereço de descoberta é aceito do token ou usuário.
+- Modo demo separado. OIDC não aceita credenciais demo como fallback.
+- Perfis server-side; permissão específica por ferramenta; política revalidada no worker stdio.
+- Níveis documentais filtrados na listagem, leitura direta, recuperação e contexto. Documento restrito não é enviado ao modelo de usuário nível 1.
+- Escrita/classificação apenas pelo gestor; métricas apenas por nível 2. UI não é fronteira de autorização.
+- Chaves de IA e DSN não são enviados ao worker de métricas, frontend ou prompt.
+- SQL parametrizado; documento/chunks atualizados em transação PostgreSQL; namespace acl-v2.
+- UI renderiza texto com escape; sem HTML de respostas. Credenciais/tokens em memória; estado transitório de PKCE em sessionStorage.
+- Perguntas e documentos com limites de tamanho; Nginx limita corpo a 256 KB. Portas Compose só em loopback, banco não publicado.
+- Logs sem perguntas, conteúdo ou tokens. Sujeito, trace, contagens e duração são registrados; não há auditoria imutável.
 
-## Ameaças e risco residual
+## Ameaças e limites
 
-| Ameaça | Controle atual | Risco residual / próximo controle |
+| Ameaça | Controle | Risco residual |
 |---|---|---|
-| Vazamento entre grupos | Filtro antes do ranking, testes negativos | Um administrador de banco pode ler tudo; adotar RLS e isolamento de tenant |
-| Prompt injection documental | Instrução de sistema e modelo sem ferramentas | Modelo pode obedecer texto malicioso; exigir red team, detecção e revisão |
-| Confused deputy MCP | Host fornece token e servidor valida grupo | Processo local herda a identidade do host; remoto exige OAuth/autorização por usuário |
-| Extração de segredos | Nenhum segredo no contexto; logs minimizados | Dependências/provedores podem registrar telemetria; revisar egress e retenção |
-| Negação de serviço/custo | Limites textuais e timeout | Sem quotas, fila ou rate limiting; threads podem continuar após timeout |
-| Conteúdo malicioso/XSS | Renderização como texto; headers Nginx | Validação de build e dependências continua necessária |
-| Corpus contaminado | Escrita restrita a operações | Autor autorizado ainda pode inserir conteúdo errado; adicionar revisão e proveniência |
-| Roubo de token | Memória no browser e loopback | Tokens estáticos não expiram; substituir por SSO/OIDC e TLS |
+| Token de outro sistema/tenant | Assinatura, emissor e audiência exatos | Revogação não é imediata; JWT válido até expirar |
+| Escalada por parâmetros | Roles resolvidas no servidor e níveis enumerados | Admin do IdP ainda pode atribuir múltiplas roles |
+| Documento restrito exposto | Filtros em todas as APIs e contexto | Banco sem RLS; operador de banco lê dados |
+| Prompt injection | Modelo sem ferramentas e instruções explícitas | Pode gerar conteúdo incorreto; não há filtro infalível |
+| Token passthrough remoto | Worker local de mesma aplicação, audiência igual | Transporte remoto exige projeto próprio de OAuth/delegação |
+| Negação de serviço/custo | Limites textuais e timeout | Sem quotas/fila/concurrency budget; thread pode continuar |
+| Exfiltração via provedor | Provedor configurado e contexto filtrado | Aprovação de dados, egress, retenção e contratos necessários |
 
-## Antes de dados corporativos
+Keycloak local usa HTTP/start-dev, contas públicas e armazenamento de laboratório. Não é configuração corporativa. A CSP permite HTTPS para IdPs configuráveis; produção deve restringir os hosts. A v0.2 não oferece multi-tenant, RLS, MFA próprio, auditoria durável, rotação ou alta disponibilidade.
 
-1. Classificar dados e aprovar finalidade, base de tratamento, residência e retenção com responsáveis.
-2. Integrar IdP: validar assinatura, issuer, audience, expiração e mapear grupos no servidor. Não confiar em JWT apenas decodificado.
-3. Separar identidades de aplicação, banco, ingestão e conectores. Segredos em cofre; rotação e revogação.
-4. Aplicar TLS, rede privada, egress em allowlist, quotas e autorização por documento/tenant em todos os conectores.
-5. Definir exclusão de documentos, vetores, backups e logs. Embeddings também são dados derivados que exigem proteção.
-6. Implementar auditoria durável com política de retenção e acesso; testar restauração.
-7. Avaliar exfiltração, prompt injection, tool poisoning, acesso cruzado e falhas dos provedores.
-8. Só adicionar ações após autorização determinística, confirmação específica, idempotência e estratégia de recuperação.
+## Antes de dados reais
 
-## Offline
+Classificar fontes e finalidade, aprovar provedor/egress, configurar TLS/IdP corporativo, rotação e identidades de serviço mínimas. Aplicar tenant independente de perfil, RLS, quotas, exclusão/retencão de texto/vetores/backups e auditoria durável. Validar matriz de acessos e tentativas de injection. Qualquer ação de escrita em sistemas externos exige autorização, aprovação específica e idempotência.
 
-PROVIDER=ollama não prova ausência de egress. Auditar imagens, modelos, telemetria, DNS e chamadas de dependências. Embeddings, geração e conectores devem permanecer locais. Provisionamento inicial requer downloads. Nenhum fallback remoto silencioso é permitido.
-
-Não reporte vulnerabilidades contendo dados ou tokens reais em uma issue pública. Este repositório não oferece SLA de segurança ou certificação de conformidade.
+[Configuração de identidade, perfis e Entra ID](08-identity-and-profiles.md).

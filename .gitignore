@@ -9,3 +9,5 @@ dist/
 *.egg-info/
 .coverage
 *.tsbuildinfo
+playwright-report/
+test-results/

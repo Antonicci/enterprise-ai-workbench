@@ -7,3 +7,8 @@
 - [Ollama](https://docs.ollama.com/)
 
 Consulte as versões bloqueadas no repositório. A documentação do ramo principal de uma dependência pode descrever APIs de uma versão diferente.
+
+- [Keycloak container e importação](https://www.keycloak.org/server/containers)
+- [oidc-client-ts](https://authts.github.io/oidc-client-ts/)
+- [PyJWT: validação de tokens](https://pyjwt.readthedocs.io/en/stable/usage.html)
+- [Microsoft Entra: validação de claims](https://learn.microsoft.com/en-us/entra/identity-platform/claims-validation)

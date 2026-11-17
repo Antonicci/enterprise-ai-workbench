@@ -1,0 +1,25 @@
+# Local identity lab only: public credentials, start-dev and HTTP on loopback.
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.8.2
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: Workbench-Admin-Lab-2026!
+      KC_HOSTNAME: http://localhost:8180
+      KC_HTTP_ENABLED: "true"
+    ports: ["127.0.0.1:8180:8080"]
+    volumes:
+      - ./infra/keycloak/workbench-realm.json:/opt/keycloak/data/import/workbench-realm.json:ro
+      - keycloakdata:/opt/keycloak/data
+  backend:
+    environment:
+      AUTH_MODE: oidc
+      OIDC_ISSUER: http://localhost:8180/realms/workbench
+      OIDC_JWKS_URL: http://keycloak:8080/realms/workbench/protocol/openid-connect/certs
+      OIDC_AUDIENCE: workbench-api
+      OIDC_CLIENT_ID: workbench-web
+      OIDC_ROLES_CLAIM: realm_access.roles
+    depends_on: [keycloak]
+volumes:
+  keycloakdata:
