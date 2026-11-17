@@ -44,3 +44,34 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci
       - run: npm run build
+  compose-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: cp .env.example .env
+      - run: docker compose up -d --build
+      - name: Verify packaged application through Nginx
+        run: |
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://localhost:8080/health; then break; fi
+            sleep 2
+          done
+          curl --fail --silent http://localhost:8080/ | grep -q 'Enterprise AI Workbench'
+          curl --fail --silent http://localhost:8080/api/chat \
+            -H 'Authorization: Bearer demo-ops' \
+            -H 'Content-Type: application/json' \
+            -d '{"question":"Como investigar erros na API de pedidos?","include_metrics":true}' > /tmp/result.json
+          python - <<'PY'
+          import json
+          result = json.load(open('/tmp/result.json'))
+          assert result['citations']
+          assert result['metrics']['synthetic'] is True
+          assert result['tool_calls'][0]['transport'] == 'MCP stdio'
+          print('PASS Compose → Nginx → API → RAG + MCP')
+          PY
+      - name: Container diagnostics
+        if: failure()
+        run: docker compose logs
+      - name: Clean up
+        if: always()
+        run: docker compose down -v
