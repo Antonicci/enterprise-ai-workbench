@@ -31,3 +31,10 @@
 - [ ] Proposta de ação com aprovação específica, idempotência e trilha durável.
 - [ ] Integração ITSM em sandbox; sem remediação automática na infraestrutura real.
 - [ ] Página de estudo no site do Studio e vídeo com evidências de execução.
+
+## v0.3 — Geração e evidência visual
+
+- [x] Provisionamento Ollama em Compose, com aceleração NVIDIA opcional.
+- [x] Etapas medidas, resposta formatada, fontes e modo apresentação.
+- [x] Smoke opt-in com modelo real em CPU; consultar o resultado da execução.
+- [ ] Benchmark do modelo 3B e GPU no ambiente do autor.

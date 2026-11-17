@@ -31,7 +31,7 @@ def create_app(settings: Settings | None = None):
         await asyncio.to_thread(seed,app.state.retrieval)
         app.state.observability=Observability()
         yield
-    app=FastAPI(title="Enterprise AI Workbench",version="0.2.0",lifespan=lifespan)
+    app=FastAPI(title="Enterprise AI Workbench",version="0.3.0",lifespan=lifespan)
     app.state.authenticator=authenticator
     def identity(credentials: HTTPAuthorizationCredentials | None = Depends(bearer)):
         if credentials is None: raise HTTPException(status_code=401,detail="Bearer token obrigatório")
@@ -91,11 +91,18 @@ def create_app(settings: Settings | None = None):
         if body.include_metrics: authorize_tool(user,"get_service_metrics",body.service)
         started,trace_id=time.perf_counter(),uuid.uuid4().hex
         retrieval=request.app.state.retrieval
+        execution=[]
         try:
             async with asyncio.timeout(settings.request_timeout):
+                phase=time.perf_counter()
                 citations=await asyncio.to_thread(retrieval.search,body.question,user.groups)
+                execution.append({"id":"retrieval","label":"Recuperação autorizada","elapsed_ms":round((time.perf_counter()-phase)*1000),"detail":f"{len(citations)} trechos recuperados","status":"completed"})
+                phase=time.perf_counter()
                 metrics=await call_metrics(settings,credentials.credentials,body.service) if body.include_metrics else None
+                execution.append({"id":"mcp","label":"Ferramenta MCP","elapsed_ms":round((time.perf_counter()-phase)*1000) if metrics else None,"detail":"get_service_metrics · dados sintéticos" if metrics else "Não solicitada","status":"completed" if metrics else "skipped"})
+                phase=time.perf_counter()
                 answer=await retrieval.provider.answer(body.question,citations,metrics)
+                execution.append({"id":"generation","label":"Geração por LLM" if settings.provider!="demo" else "Resposta extrativa","elapsed_ms":round((time.perf_counter()-phase)*1000),"detail":settings.chat_model if settings.provider!="demo" else "Sem LLM","status":"completed"})
         except Exception:
             request.app.state.observability.record(round((time.perf_counter()-started)*1000),failed=True)
             log.warning("request_failed trace=%s subject=%s",trace_id,user.subject)
@@ -104,7 +111,8 @@ def create_app(settings: Settings | None = None):
         request.app.state.observability.record(elapsed,len(citations),int(bool(metrics)))
         log.info("chat trace=%s subject=%s sources=%s metrics=%s elapsed_ms=%s",trace_id,user.subject,len(citations),body.include_metrics,elapsed)
         return {"answer":answer,"citations":[c.model_dump() for c in citations],"metrics":metrics,
-                "trace_id":trace_id,"elapsed_ms":elapsed,"provider":settings.provider,
+                "trace_id":trace_id,"elapsed_ms":elapsed,"provider":settings.provider,"execution":execution,
+                "chat_model":settings.chat_model if settings.provider!="demo" else "extractive-demo",
                 "tool_calls":[{"name":"get_service_metrics","transport":"MCP stdio","status":"ok"}] if metrics else []}
     return app
 

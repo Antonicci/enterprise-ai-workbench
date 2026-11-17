@@ -4,7 +4,7 @@
 
 [Rodrigo Antonicci](https://github.com/Antonicci) · [Chihuahuas Studios](https://chihuahuasstudios.com/architectures/)
 
-## v0.2 — identidade e permissões visíveis
+## v0.3 — Ollama e investigação com evidências visuais
 
 O usuário se autentica, o backend resolve seu perfil, filtra os documentos e autoriza cada ferramenta. A interface mostra identidade e permissões no header, permite editar documentos e oferece um mapa interativo dos componentes.
 
@@ -21,6 +21,14 @@ A raiz `/` apresenta o projeto publicamente, sem menus ou dados do workspace. `/
 Perfis: `knowledge-manager`, `query-l1`, `query-l2`. Perfis concedem permissões; documentos têm classificação `level1` ou `level2`. A autorização acontece no servidor e também no worker MCP. Quem possui múltiplos perfis acumula permissões; os usuários iniciais têm um perfil cada.
 
 > Laboratório com dados sintéticos. A resposta padrão é extrativa, **sem LLM**, e usa hashing lexical. Ollama/API habilitam geração e embeddings reais. Métricas da aplicação investigada são sintéticas. Métricas operacionais do assistente são medidas; custo, tokens e qualidade ainda não são medidos.
+
+## Ativar Ollama com login e preparar a demonstração
+
+```powershell
+docker compose -f compose.yaml -f compose.oidc.yaml -f compose.ollama.yaml up --build
+```
+
+Baixa chat/embeddings em um volume e ativa o provedor real. Para NVIDIA, acrescente `-f compose.gpu.yaml` antes de `up`, se o Docker já reconhecer sua GPU. A nova tela mostra resposta formatada, fontes e tempos medidos, com **Modo apresentação**. [Guia de Ollama, GPU e roteiro LinkedIn](docs/09-ollama-and-presentation.md).
 
 ## Opção 1 — executar a demonstração sem provedor de identidade
 

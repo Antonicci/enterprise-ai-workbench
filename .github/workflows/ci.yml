@@ -105,3 +105,38 @@ jobs:
       - name: Clean up
         if: always()
         run: docker compose -f compose.yaml -f compose.oidc.yaml down -v
+  ollama-real-smoke:
+    if: contains(github.event.head_commit.message, '[ollama-smoke]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      CHAT_MODEL: qwen2.5:0.5b
+      EMBEDDING_MODEL: nomic-embed-text
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure isolated synthetic identity
+        run: |
+          cp .env.example .env
+          python - <<'PY'
+          import json,secrets
+          from pathlib import Path
+          p=Path('.env')
+          lines=[line for line in p.read_text().splitlines() if not line.startswith('AUTH_TOKENS=')]
+          lines.append('AUTH_TOKENS='+json.dumps({secrets.token_urlsafe(32):['query-l2']}))
+          p.write_text('\n'.join(lines)+'\n')
+          PY
+      - name: Build and download real models
+        run: docker compose -f compose.yaml -f compose.ollama.yaml up -d --build
+      - name: Real embeddings, generation, authorization and MCP
+        run: python scripts/smoke_ollama.py
+      - name: Record Ollama version and model inventory
+        if: always()
+        run: |
+          docker compose -f compose.yaml -f compose.ollama.yaml exec -T ollama ollama --version
+          docker compose -f compose.yaml -f compose.ollama.yaml exec -T ollama ollama list
+      - name: Diagnostics
+        if: failure()
+        run: docker compose -f compose.yaml -f compose.ollama.yaml logs
+      - name: Cleanup
+        if: always()
+        run: docker compose -f compose.yaml -f compose.ollama.yaml down -v

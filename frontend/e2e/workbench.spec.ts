@@ -99,3 +99,17 @@ test('a rejected session clears protected content instead of leaving the app vis
  await expect(page.locator('.shell')).toHaveCount(0);
  await expect(page.getByRole('heading',{name:'Entre para explorar.'})).toBeVisible();
 });
+test('presentation mode keeps identity, measured stages and source evidence',async({page})=>{
+ await connect(page,'l1');
+ await page.getByRole('button',{name:'Investigar →',exact:true}).click();
+ await expect(page.getByLabel('Etapas medidas da consulta')).toContainText('Resposta extrativa');
+ await expect(page.getByLabel('Etapas medidas da consulta')).toContainText('Não usada');
+ await page.getByRole('button',{name:'Modo apresentação',exact:true}).click();
+ await expect(page.locator('.presentation-mode')).toBeVisible();
+ await expect(page.getByRole('banner',{name:'Sessão ativa'})).toContainText('Consulta nível 1');
+ await expect(page.getByRole('button',{name:'Conhecimento',exact:false})).toBeHidden();
+ await page.getByText('Ver trecho recuperado',{exact:true}).first().click();
+ await expect(page.locator('.source-panel')).toContainText('Documento SINTÉTICO');
+ await page.getByRole('button',{name:'Sair da apresentação',exact:true}).click();
+ await expect(page.getByRole('button',{name:'Conhecimento',exact:false})).toBeVisible();
+});

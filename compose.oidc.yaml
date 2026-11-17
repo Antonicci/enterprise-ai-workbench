@@ -20,6 +20,8 @@ services:
       OIDC_AUDIENCE: workbench-api
       OIDC_CLIENT_ID: workbench-web
       OIDC_ROLES_CLAIM: realm_access.roles
-    depends_on: [keycloak]
+    depends_on:
+      keycloak:
+        condition: service_started
 volumes:
   keycloakdata:

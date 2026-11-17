@@ -125,3 +125,11 @@ def test_postgres_authorization_and_replace():
     assert any(c.document_id==doc.id for c in retrieval.search('Zephyr faturamento',['level1']))
     retrieval.ingest(doc.model_copy(update={'access_level':'level2'}))
     assert not any(c.document_id==doc.id for c in retrieval.search('Zephyr faturamento',['level1']))
+
+def test_execution_trace_distinguishes_measured_and_skipped_steps(client):
+    result=client.post('/api/chat',headers=headers(),json={'question':'API pedidos erros'}).json()
+    stages={stage['id']:stage for stage in result['execution']}
+    assert stages['retrieval']['elapsed_ms']>=0
+    assert stages['generation']['elapsed_ms']>=0
+    assert stages['mcp']['status']=='skipped' and stages['mcp']['elapsed_ms'] is None
+    assert result['chat_model']=='extractive-demo'

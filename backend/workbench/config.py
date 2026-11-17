@@ -24,6 +24,8 @@ class Settings(BaseSettings):
         "demo-analyst": ["query-l1"], "demo-ops": ["query-l2"],
         "demo-manager": ["knowledge-manager"]
     })
+    ollama_num_ctx: int = Field(default=4096, ge=1024, le=32768)
+    max_output_tokens: int = Field(default=512, ge=64, le=4096)
     request_timeout: float = Field(default=60, gt=0, le=180)
     top_k: int = Field(default=4, ge=1, le=10)
     @model_validator(mode="after")
