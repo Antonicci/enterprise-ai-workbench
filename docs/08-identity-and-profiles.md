@@ -49,3 +49,9 @@ Não existe botão que converta automaticamente uma instalação Keycloak em Ent
 O volume Keycloak preserva o realm; --import-realm não substitui um realm existente. Alterações de roles/usuários podem ser feitas no console administrativo. Para recriar apenas o realm, faça backup, pare e remova apenas o volume Keycloak necessário; nunca apagar todos os volumes para atualizar identidades, pois o volume PostgreSQL pode conter documentos.
 
 No banco de conhecimento, acl-v2 evita que os grupos antigos sejam interpretados com a política nova. Não há migração silenciosa de documentos particulares; reingerir com nível explícito. O seed da v0.2 apenas cria documentos ausentes e preserva edições.
+
+## Camada pública e header de sessão
+
+`/` é uma apresentação pública do projeto, com documentação pública e entrada. Não renderiza controles de investigação, biblioteca, métricas ou arquitetura interativa antes do login. `/workspace` requer `/api/config` validado antes de renderizar qualquer conteúdo; sem sessão OIDC, redireciona ao IdP. No modo demo, apresenta o formulário de credencial local.
+
+O header protegido exibe usuário, perfil, permissões e Sair. Expiração do access token e respostas HTTP 401 limpam fontes, documentos, métricas e dados da sessão, antes de nova autenticação. Erros de autorização 403 mantêm a identidade e não são contornados. Falha na validação inicial permanece na camada pública com erro, evitando loops de redirecionamento. O frontend não substitui os controles da API.

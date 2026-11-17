@@ -6,7 +6,9 @@
 
 ## v0.2 — identidade e permissões visíveis
 
-O usuário se autentica, o backend resolve seu perfil, filtra os documentos e autoriza cada ferramenta. A interface mostra identidade e permissões, permite editar documentos e oferece um mapa interativo dos componentes.
+O usuário se autentica, o backend resolve seu perfil, filtra os documentos e autoriza cada ferramenta. A interface mostra identidade e permissões no header, permite editar documentos e oferece um mapa interativo dos componentes.
+
+A raiz `/` apresenta o projeto publicamente, sem menus ou dados do workspace. `/workspace` exige uma sessão validada; no modo OIDC, acesso direto sem sessão redireciona ao login. Logout, expiração ou resposta 401 removem o conteúdo privado da interface. Os endpoints de negócio continuam exigindo autenticação no backend.
 
 | Capacidade | Gestor de conhecimento | Consulta nível 1 | Consulta nível 2 |
 |---|---|---|---|

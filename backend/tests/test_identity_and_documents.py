@@ -98,3 +98,8 @@ def test_entra_style_app_roles_can_be_mapped(jwks_server):
     settings=jwks_server.settings.model_copy(update={'oidc_roles_claim':'roles'})
     user=Authenticator(settings).authenticate(jwks_server.token(role='unassigned',roles=['query-l2']))
     assert 'metrics:read' in user.permissions
+
+@pytest.mark.parametrize('path',['/api/config','/api/documents','/api/documents/orders-runbook','/api/observability'])
+def test_all_business_read_endpoints_require_login(path):
+    with TestClient(create_app(Settings(_env_file=None))) as client:
+        assert client.get(path).status_code==401

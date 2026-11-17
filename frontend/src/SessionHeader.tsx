@@ -1,0 +1,5 @@
+type Props={name:string;profiles:string[];permissions:string[];mode:string;onLogout:()=>void;onPublic:()=>void};
+export default function SessionHeader({name,profiles,permissions,mode,onLogout,onPublic}:Props){
+ const initials=name.split(/\s+/).slice(0,2).map(x=>x[0]).join('').toUpperCase();
+ return <header role="banner" className="session-header" aria-label="Sessão ativa"><div className="workspace-context"><span className="session-dot"/>WORKSPACE PROTEGIDO<small>{mode==='oidc'?'SSO corporativo / OIDC':'Demonstração autenticada'}</small></div><div className="session-actions"><button className="header-link" onClick={onPublic}>Apresentação pública</button><div className="identity-block"><span className="avatar" aria-hidden="true">{initials}</span><div><strong>{name}</strong><div className="profile-badges">{profiles.map(profile=><span key={profile}>{profile}</span>)}</div></div></div><details className="session-permissions"><summary>Permissões</summary><div aria-label="Permissões atuais">{permissions.map(p=><span key={p}>{p}</span>)}</div></details><button className="logout-button" onClick={onLogout}>Sair</button></div></header>;
+}

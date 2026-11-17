@@ -11,7 +11,7 @@ async function connect(page:Page,role:'manager'|'l1'|'l2'){
   await page.locator('input[type=password]').fill({manager:'demo-manager',l1:'demo-analyst',l2:'demo-ops'}[role]);
   await page.getByRole('button',{name:'Conectar',exact:true}).click();
  }
- await expect(page.getByLabel('Permissões atuais')).toBeVisible();
+ await expect(page.getByRole('banner',{name:'Sessão ativa'})).toBeVisible();
 }
 test('level 1 can investigate but cannot use metrics or edit',async({page})=>{
  await connect(page,'l1');
@@ -54,4 +54,48 @@ test('level 2 can use both MCP metrics tools and inspect component map',async({p
  await expect(page.locator('.component-detail')).toContainText('Resolve perfil no servidor');
  await page.setViewportSize({width:390,height:844});
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
+});
+
+test('public layer has no workspace controls and private APIs reject guests',async({page})=>{
+ await page.goto('/');
+ await expect(page.getByRole('heading',{name:'Entre para explorar.'})).toBeVisible();
+ await expect(page.locator('.shell')).toHaveCount(0);
+ await expect(page.getByRole('button',{name:'Investigar →',exact:true})).toHaveCount(0);
+ await expect(page.getByRole('button',{name:'Conhecimento',exact:false})).toHaveCount(0);
+ const response=await page.request.get('/api/documents');
+ expect(response.status()).toBe(401);
+ if(oidc){
+  await page.goto('/workspace');
+  await expect(page).toHaveURL(/localhost:8180/);
+  await expect(page.locator('#username')).toBeVisible();
+ }else{
+  await page.goto('/workspace');
+  await expect(page.getByRole('button',{name:'Conectar',exact:true})).toBeVisible();
+  await expect(page.locator('.shell')).toHaveCount(0);
+ }
+});
+test('header shows current profile, permissions and logout removes private interface',async({page})=>{
+ await connect(page,'l2');
+ const header=page.getByRole('banner',{name:'Sessão ativa'});
+ await expect(header).toContainText('Consulta nível 2');
+ if(oidc)await expect(header).toContainText('consulta2');
+ await header.getByText('Permissões',{exact:true}).click();
+ await expect(page.getByLabel('Permissões atuais')).toContainText('metrics:read');
+ const signout=oidc?page.waitForResponse(response=>response.url().includes('/protocol/openid-connect/logout')):Promise.resolve();
+ await header.getByRole('button',{name:'Sair',exact:true}).click();
+ await signout;
+ if(oidc)await page.waitForURL('http://localhost:8080/');
+ await expect(page.getByRole('heading',{name:'Entre para explorar.'})).toBeVisible();
+ await expect(page.locator('.shell')).toHaveCount(0);
+ await page.setViewportSize({width:390,height:844});
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
+});
+test('a rejected session clears protected content instead of leaving the app visible',async({page})=>{
+ await connect(page,'l1');
+ // Reject the next operation and any automatic SSO revalidation: no protected UI may survive a 401.
+ await page.route('**/api/chat',route=>route.fulfill({status:401,contentType:'application/json',body:JSON.stringify({detail:'Sessão expirada no teste'})}));
+ await page.route('**/api/config',route=>route.fulfill({status:401,contentType:'application/json',body:JSON.stringify({detail:'Sessão expirada no teste'})}));
+ await page.getByRole('button',{name:'Investigar →',exact:true}).click();
+ await expect(page.locator('.shell')).toHaveCount(0);
+ await expect(page.getByRole('heading',{name:'Entre para explorar.'})).toBeVisible();
 });
