@@ -29,3 +29,14 @@ v0.1: [workflow aprovado](https://github.com/Antonicci/enterprise-ai-workbench/a
 - Compose OIDC: Keycloak real, Authorization Code + PKCE e **3 testes de navegador aprovados**, usando gestor, consulta1 e consulta2.
 
 Os cenários de navegador incluem consulta com fontes, bloqueio de ferramentas por perfil, inclusão/edição/reclassificação, contadores medidos por MCP e mapa de arquitetura em viewport móvel. O primeiro teste SSO identificou a ausência de sub no token; o cliente Keycloak foi corrigido com o escopo basic, preservando a validação obrigatória no backend. Logs Nginx omitem query strings para não registrar códigos do callback.
+
+## Camada pública e sessão protegida
+
+[Execução aprovada 44153576669](https://github.com/Antonicci/enterprise-ai-workbench/actions/runs/44153576669), código a90d6d463f3771bceaf27665763810a9832dfbda:
+
+- **25 testes de backend** aprovados, incluindo os endpoints de leitura de negócio sem login.
+- Build frontend aprovado.
+- **6 testes de navegador em demo e 6 com Keycloak** aprovados.
+- Cenários novos: camada pública sem controles do workspace, /workspace redirecionando ao IdP, header com usuário/perfil/permissões, logout e limpeza da interface após HTTP 401. O acesso direto às APIs sem token continua retornando 401.
+
+A UI não implementa revogação imediata de JWT no servidor. Sessões em memória e validade dos tokens seguem as limitações descritas no guia de identidade.
