@@ -40,3 +40,13 @@ Os cenários de navegador incluem consulta com fontes, bloqueio de ferramentas p
 - Cenários novos: camada pública sem controles do workspace, /workspace redirecionando ao IdP, header com usuário/perfil/permissões, logout e limpeza da interface após HTTP 401. O acesso direto às APIs sem token continua retornando 401.
 
 A UI não implementa revogação imediata de JWT no servidor. Sessões em memória e validade dos tokens seguem as limitações descritas no guia de identidade.
+
+## v0.3 — Ollama real e evidências visuais
+
+[Execução aprovada 44178793520](https://github.com/Antonicci/enterprise-ai-workbench/actions/runs/44178793520), código c6c4478649c1fb7114999d8fbdac0ff54ab35388:
+
+- **26 testes de backend** aprovados, incluindo PostgreSQL e distinção entre duração medida e etapa MCP não solicitada.
+- Build frontend aprovado e **7 testes de navegador em cada modo**, demo e OIDC (14 no total), incluindo modo apresentação e fontes.
+- **Ollama real em CPU aprovado**, com qwen2.5:0.5b e nomic-embed-text: geração, embeddings, recuperação e MCP executados. A ferramenta de serviço segue retornando dados sintéticos.
+
+Esse smoke verifica o caminho executável; não avalia a qualidade das respostas. Não é benchmark do modelo 3B nem da RTX 4050 do autor. A configuração de GPU está preparada, mas precisa de validação no host. A tag da imagem Ollama é mutável; o job registra versão e inventário. Não foi verificada ausência total de egress, nem inicialização offline. O provisionador de modelos consulta o registro quando executa pull, mesmo se os pesos já estiverem em cache.
