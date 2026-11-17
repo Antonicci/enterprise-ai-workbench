@@ -68,7 +68,7 @@ AUTH_TOKENS={"SUBSTITUA_ANALYST":["employees"],"SUBSTITUA_OPS":["employees","ope
 3. Inicie o banco e aguarde estar saudável antes do backend:
 
 ```bash
-docker compose --profile vector up -d db
+docker compose --profile vector up -d --wait db
 docker compose --profile vector ps
 docker compose --profile vector up --build backend frontend
 ```
