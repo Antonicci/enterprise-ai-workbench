@@ -83,6 +83,8 @@ O backend compara medições e limiares no formato de regra reconhecido usando D
 
 ## Roteiro visual
 
+[Roteiro de vídeo de 90 segundos, capturas e texto para LinkedIn](docs/12-demo-and-linkedin.md).
+
 1. Entre como consulta1 e investigue erros HTTP 500 na API de pedidos. Veja somente fontes nível 1.
 2. Como consulta2, habilite métricas: a API chama `get_service_metrics` por MCP stdio.
 3. Em **Observabilidade**, consulte `get_ai_quality_metrics`: contadores reais do backend, sem dados inventados de custo/qualidade.
