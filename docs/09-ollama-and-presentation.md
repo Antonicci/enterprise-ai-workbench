@@ -56,20 +56,6 @@ O backend mede recuperação (inclui embedding da pergunta e busca), chamada MCP
 
 Tokens, custo e avaliação de groundedness/recall continuam não medidos. Nenhum percentual de confiança é inferido da similaridade.
 
-## Roteiro de captura para LinkedIn
-
-1. Use dados sintéticos e o perfil consulta2.
-2. Faça uma consulta com Ollama e MCP; espere concluir.
-3. Clique em **Modo apresentação**. A barra lateral é recolhida; identidade e modelo continuam visíveis.
-4. Abra um trecho em **Contexto autorizado** e capture a tela com resposta, fontes e tempos reais.
-5. Para vídeo curto, mostre também consulta1 sem a ferramenta e gestor alterando um documento. Não exponha tokens, `.env` ou console administrativo na gravação.
-
-Sugestão de legenda, após executar e conferir o resultado na sua máquina:
-
-> Estou desenvolvendo um laboratório público de arquitetura de IA corporativa: login OIDC com Keycloak, três perfis de acesso, RAG com fontes autorizadas, ferramentas MCP e geração via Ollama. A demonstração mostra as decisões de acesso e os tempos medidos de cada consulta. As métricas de serviço são sintéticas; a integração e o controle de acesso são executáveis. Código e documentação no GitHub.
-
-Não publicar benchmark de GPU, operação totalmente offline, qualidade de resposta ou prontidão para produção sem evidência própria.
-
 ## Verificação real de modelo no CI
 
 O job ollama-real-smoke é opt-in por mensagem de commit contendo `[ollama-smoke]`. Executa CPU com qwen2.5:3b e nomic-embed-text, incluindo saída para revisão manual de atribuição das fontes. O primeiro smoke histórico utilizou o modelo 0.5B. Valida geração, embeddings, fontes e MCP reais. Não mede qualidade e não comprova desempenho do modelo 3B na RTX 4050. Os outros jobs continuam exercitando a demo e os contratos simulados.

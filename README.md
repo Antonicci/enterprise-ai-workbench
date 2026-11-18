@@ -28,7 +28,7 @@ Perfis: `knowledge-manager`, `query-l1`, `query-l2`. Perfis concedem permissões
 docker compose -f compose.yaml -f compose.oidc.yaml -f compose.ollama.yaml up --build
 ```
 
-Baixa chat/embeddings em um volume e ativa o provedor real. Para NVIDIA, acrescente `-f compose.gpu.yaml` antes de `up`, se o Docker já reconhecer sua GPU. A nova tela mostra resposta formatada, fontes e tempos medidos, com **Modo apresentação**. [Guia de Ollama, GPU e roteiro LinkedIn](docs/09-ollama-and-presentation.md).
+Baixa chat/embeddings em um volume e ativa o provedor real. Para NVIDIA, acrescente `-f compose.gpu.yaml` antes de `up`, se o Docker já reconhecer sua GPU. A nova tela mostra resposta formatada, fontes e tempos medidos, com **Modo apresentação**. [Guia de Ollama, GPU e interface](docs/09-ollama-and-presentation.md).
 
 ## Opção 1 — executar a demonstração sem provedor de identidade
 
@@ -82,8 +82,6 @@ Documentos podem ser associados a pedidos, pagamentos ou uso geral. A busca apli
 O backend compara medições e limiares no formato de regra reconhecido usando Decimal. Exibe a relação e as fontes, e retém rascunhos com contradições reconhecidas. O guard é limitado e não equivale a validação semântica completa. [Escopo e limitações](docs/11-deterministic-numeric-checks.md).
 
 ## Roteiro visual
-
-[Roteiro de vídeo de 90 segundos, capturas e texto para LinkedIn](docs/12-demo-and-linkedin.md).
 
 1. Entre como consulta1 e investigue erros HTTP 500 na API de pedidos. Veja somente fontes nível 1.
 2. Como consulta2, habilite métricas: a API chama `get_service_metrics` por MCP stdio.
