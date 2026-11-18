@@ -128,3 +128,18 @@ test('retrieval shows document scope and distinguishes direct MCP evidence',asyn
  await expect(page.locator('.source-panel')).toContainText('Runbook — latência em pagamentos');
  await expect(page.locator('.source-panel')).not.toContainText('Runbook — erros na API de pedidos');
 });
+test('numeric verdict is computed independently and a contradictory model draft is withheld',async({page})=>{
+ await connect(page,'l2');
+ await page.route('**/api/chat',async route=>{
+  const response=await route.fetch();const result=await response.json();
+  // Exercise UI treatment of a server-blocked draft without executing an LLM in this browser suite.
+  result.answer_validation={status:'blocked',reasons:['Contradição de teste'],scope:'Guard limitado'};
+  result.answer='Resultado determinístico para revisão humana.';
+  await route.fulfill({response,json:result});
+ });
+ await page.getByRole('checkbox').check();
+ await page.getByRole('button',{name:'Investigar →',exact:true}).click();
+ await expect(page.getByLabel('Comparação calculada pelo backend')).toContainText('4,8% > 2%');
+ await expect(page.getByLabel('Comparação calculada pelo backend')).toContainText('Condição de investigação atendida');
+ await expect(page.getByRole('alert')).toContainText('Rascunho do modelo retido');
+});

@@ -31,7 +31,7 @@ def test_authentication_is_required(client):
 def test_restricted_source_never_enters_model_context(client):
     provider=client.app.state.retrieval.provider
     captured=[]
-    async def answer(question,citations,metrics):
+    async def answer(question,citations,metrics,comparisons=None):
         captured.extend(citations)
         return 'Resposta de teste'
     provider.answer=answer

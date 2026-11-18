@@ -12,6 +12,7 @@ from .retrieval import Retrieval, resolve_scope
 from .seed import seed
 from .mcp_client import call_metrics, call_ai_metrics
 from .observability import Observability
+from .numeric_checks import compare_runbook,validate_draft,safe_report
 
 log=logging.getLogger("workbench.audit")
 log.setLevel(logging.INFO)
@@ -104,17 +105,24 @@ def create_app(settings: Settings | None = None):
                 metrics=await call_metrics(settings,credentials.credentials,body.service) if body.include_metrics else None
                 execution.append({"id":"mcp","label":"Ferramenta MCP","elapsed_ms":round((time.perf_counter()-phase)*1000) if metrics else None,"detail":"get_service_metrics · dados sintéticos" if metrics else "Não solicitada","status":"completed" if metrics else "skipped"})
                 phase=time.perf_counter()
-                answer=await retrieval.provider.answer(body.question,citations,metrics)
+                comparisons=compare_runbook(citations,metrics)
+                answer=await retrieval.provider.answer(body.question,citations,metrics,comparisons)
                 execution.append({"id":"generation","label":"Geração por LLM" if settings.provider!="demo" else "Resposta extrativa","elapsed_ms":round((time.perf_counter()-phase)*1000),"detail":settings.chat_model if settings.provider!="demo" else "Sem LLM","status":"completed"})
         except Exception:
             request.app.state.observability.record(round((time.perf_counter()-started)*1000),failed=True)
             log.warning("request_failed trace=%s subject=%s",trace_id,user.subject)
             raise HTTPException(status_code=503,detail={"message":"Dependência indisponível; verifique configuração e serviços.","trace_id":trace_id}) from None
+        phase=time.perf_counter()
+        answer_validation=validate_draft(answer,comparisons)
+        if answer_validation['status']=='blocked':
+            answer=safe_report(comparisons)
+            log.warning('draft_blocked trace=%s subject=%s',trace_id,user.subject)
+        execution.append({"id":"numeric_validation","label":"Verificação numérica","elapsed_ms":round((time.perf_counter()-phase)*1000) if comparisons else None,"detail":"Comparação no backend; guard de padrões limitado" if comparisons else "Nenhum limiar no formato reconhecido","status":"completed" if comparisons else "skipped"})
         elapsed=round((time.perf_counter()-started)*1000)
         request.app.state.observability.record(elapsed,len(citations),int(bool(metrics)))
         log.info("chat trace=%s subject=%s sources=%s metrics=%s elapsed_ms=%s",trace_id,user.subject,len(citations),body.include_metrics,elapsed)
         return {"answer":answer,"citations":[c.model_dump() for c in citations],"metrics":metrics,
-                "trace_id":trace_id,"elapsed_ms":elapsed,"provider":settings.provider,"execution":execution,"retrieval_scope":scope or "all",
+                "trace_id":trace_id,"elapsed_ms":elapsed,"provider":settings.provider,"execution":execution,"comparisons":comparisons,"answer_validation":answer_validation,"retrieval_scope":scope or "all",
                 "chat_model":settings.chat_model if settings.provider!="demo" else "extractive-demo",
                 "tool_calls":[{"name":"get_service_metrics","transport":"MCP stdio","status":"ok"}] if metrics else []}
     return app

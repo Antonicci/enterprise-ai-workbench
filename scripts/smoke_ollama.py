@@ -20,6 +20,7 @@ assert result['answer'].strip() and result['citations']
 assert result['metrics']['synthetic'] is True
 assert 'payments-runbook' not in [c['document_id'] for c in result['citations']]
 assert result['metrics']['source_id']=='mcp:get_service_metrics'
-assert result['execution'][-1]['label']=='Geração por LLM'
+assert next(step for step in result['execution'] if step['id']=='generation')['label']=='Geração por LLM'
+assert result['comparisons'][0]['relation']=='>' and result['comparisons'][0]['triggered'] is True
 assert all(step['elapsed_ms']>=0 for step in result['execution'])
-print(json.dumps({'status':'PASS','model':result['chat_model'],'sources':len(result['citations']),'elapsed_ms':result['elapsed_ms'],'execution':result['execution'],'answer_for_manual_review':result['answer'],'scope':'real Ollama CPU smoke; manual source-attribution review, no GPU benchmark'},ensure_ascii=False))
+print(json.dumps({'status':'PASS','model':result['chat_model'],'sources':len(result['citations']),'elapsed_ms':result['elapsed_ms'],'execution':result['execution'],'answer_for_manual_review':result['answer'],'comparisons':result['comparisons'],'answer_validation':result['answer_validation'],'scope':'real Ollama CPU smoke; manual source-attribution review, no GPU benchmark'},ensure_ascii=False))

@@ -77,6 +77,10 @@ O volume `keycloakdata` preserva usuários e configurações. A importação ini
 
 Documentos podem ser associados a pedidos, pagamentos ou uso geral. A busca aplica escopo e acesso antes do ranking. O contexto do modelo distingue orientações documentais de medições MCP, e a interface apresenta um bloco de evidência direta da ferramenta. [Motivação, migração e limites](docs/10-source-attribution-and-scope.md).
 
+## Comparação numérica
+
+O backend compara medições e limiares no formato de regra reconhecido usando Decimal. Exibe a relação e as fontes, e retém rascunhos com contradições reconhecidas. O guard é limitado e não equivale a validação semântica completa. [Escopo e limitações](docs/11-deterministic-numeric-checks.md).
+
 ## Roteiro visual
 
 1. Entre como consulta1 e investigue erros HTTP 500 na API de pedidos. Veja somente fontes nível 1.

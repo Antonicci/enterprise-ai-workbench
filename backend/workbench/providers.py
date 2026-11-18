@@ -35,7 +35,7 @@ class Provider:
             vectors.append([x/norm for x in vector])
         return vectors
 
-    async def answer(self, question: str, citations: list, metrics: dict | None) -> str:
+    async def answer(self, question: str, citations: list, metrics: dict | None, comparisons=None) -> str:
         if not citations and not metrics:
             return "Não encontrei evidências autorizadas. Reformule a pergunta ou solicite a inclusão de uma fonte."
         if not self.chat:
@@ -46,7 +46,7 @@ class Provider:
             return "\n\n".join(lines)
         from langchain_core.messages import SystemMessage, HumanMessage
         import json
-        context = json.dumps(build_evidence(citations,metrics), ensure_ascii=False)
+        context = json.dumps(build_evidence(citations,metrics,comparisons), ensure_ascii=False)
         response = await self.chat.ainvoke([
             SystemMessage(content=SYSTEM_PROMPT),
             HumanMessage(content=f"Pergunta: {question}\nEvidências (JSON): {context}")])
