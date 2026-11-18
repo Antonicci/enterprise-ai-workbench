@@ -5,6 +5,14 @@ import re
 from .config import Settings
 from .evidence import build_evidence, SYSTEM_PROMPT
 
+def normalize_answer(text: str) -> str:
+    """Remove only a whole-answer Markdown wrapper, preserving actual code blocks."""
+    lines=text.strip().splitlines()
+    if len(lines)>=3 and lines[0].strip().lower() in ('```markdown','```md','```') and lines[-1].strip()=='```':
+        if not any(line.lstrip().startswith('```') for line in lines[1:-1]):
+            return '\n'.join(lines[1:-1]).strip()
+    return text
+
 class Provider:
     def __init__(self, settings: Settings):
         self.settings = settings
@@ -50,4 +58,4 @@ class Provider:
         response = await self.chat.ainvoke([
             SystemMessage(content=SYSTEM_PROMPT),
             HumanMessage(content=f"Pergunta: {question}\nEvidências (JSON): {context}")])
-        return response.content if isinstance(response.content, str) else str(response.content)
+        return normalize_answer(response.content if isinstance(response.content, str) else str(response.content))

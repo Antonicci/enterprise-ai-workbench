@@ -35,3 +35,10 @@ O bloco REGRA + MEDIÇÃO mostra o cálculo do backend e as duas fontes. A respo
 ## Regressões
 
 Os testes cobrem 4,8 versus 2, igualdade, abaixo, decimais, medição inválida, janela incompatível, outro serviço, regra não reconhecida, negação no documento, conflito entre fontes, saída incorreta fornecida pelo modelo e ausência de fontes recuperadas. A interface é exercitada também com uma resposta retida. Nenhum desses testes é nota global de qualidade de LLM.
+
+
+## Apresentação e fidelidade textual
+
+O adaptador remove uma cerca externa única `markdown`, `md` ou sem linguagem que envolva toda a resposta. Blocos internos, outras linguagens e cercas incompletas permanecem intactos. Essa normalização só altera a apresentação, sem reescrever afirmações.
+
+O prompt pede recomendações sem alegar execução, proíbe inventar remoção de senhas e distingue aprovação operacional de ausência de capacidade de execução neste laboratório. Também atribui a comparação ao backend, enquanto o MCP fornece medições. São instruções ao modelo, não uma garantia nem um filtro semântico de todas as afirmações. A proteção determinística continua restrita aos padrões numéricos documentados acima.
