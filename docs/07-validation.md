@@ -62,3 +62,13 @@ Esse smoke verifica o caminho executável; não avalia a qualidade das respostas
 A abertura da resposta ainda utilizou uma formulação genérica baseada nos documentos antes de mencionar a observação. Não tratamos uma execução como prova de atribuição perfeita: a interface mostra as medições diretamente com origem MCP, e o texto gerado continua exigindo revisão.
 
 A primeira tentativa do job OIDC falhou no download de imagem Docker com connection reset by peer, antes de subir a aplicação. Apenas o job com falha foi repetido; a tentativa seguinte passou.
+
+## Comparação determinística e retenção de contradições conhecidas
+
+[Execução aprovada 44209285279](https://github.com/Antonicci/enterprise-ai-workbench/actions/runs/44209285279), código 6cb03166b1697c5cddacfa314eb7cd23971ff2db:
+
+- **52 testes de backend** aprovados, incluindo PostgreSQL, limites decimais, janela incompatível, regras conflitantes, ausência de fonte autorizada e retenção do rascunho incorreto observado no laboratório.
+- Build frontend e **9 testes de navegador por modo** (18 no total), demo e OIDC, aprovados. A regressão de UI usa resposta interceptada para verificar o aviso de retenção; a regressão do backend injeta o rascunho contraditório para exercitar a proteção real.
+- **Qwen2.5 3B real em CPU** aprovado: comparação retornou `4.8 > 2`, diferença de `2.8` pontos percentuais e condição de investigação atendida. O rascunho desta execução reconheceu corretamente que a medição está acima do limiar; a proteção retornou `no_known_conflict`.
+
+A revisão manual ainda identificou atribuição genérica do cálculo à “ferramenta” no texto do modelo. A comparação é executada pelo backend, não pelo servidor MCP. O bloco independente da interface informa essa origem. Não tratamos esse resultado como validação semântica completa nem benchmark da GPU do autor. Os valores operacionais continuam sintéticos. Veja [escopo e limites do cálculo](11-deterministic-numeric-checks.md).
