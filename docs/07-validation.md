@@ -72,3 +72,14 @@ A primeira tentativa do job OIDC falhou no download de imagem Docker com connect
 - **Qwen2.5 3B real em CPU** aprovado: comparação retornou `4.8 > 2`, diferença de `2.8` pontos percentuais e condição de investigação atendida. O rascunho desta execução reconheceu corretamente que a medição está acima do limiar; a proteção retornou `no_known_conflict`.
 
 A revisão manual ainda identificou atribuição genérica do cálculo à “ferramenta” no texto do modelo. A comparação é executada pelo backend, não pelo servidor MCP. O bloco independente da interface informa essa origem. Não tratamos esse resultado como validação semântica completa nem benchmark da GPU do autor. Os valores operacionais continuam sintéticos. Veja [escopo e limites do cálculo](11-deterministic-numeric-checks.md).
+
+
+## Apresentação da resposta e instruções de fidelidade
+
+[Execução aprovada 44327394589](https://github.com/Antonicci/enterprise-ai-workbench/actions/runs/44327394589), código 90712ecc9fabcc842277176d8936187f98d02b7b:
+
+- **61 testes backend**, build frontend e **18 testes de navegador** (9 demo, 9 OIDC) aprovados.
+- Novas regressões verificam remoção de cerca externa de Markdown, preservação de código e cercas incompletas e normalização no adaptador real com modelo simulado.
+- Smoke com Qwen2.5 3B real em CPU aprovado. Na saída revisada, o modelo usou texto Markdown direto, citou a medição de 4,8% e distinguiu o limiar de 2%. Não repetiu as alegações de remoção de senhas nem de proibição geral de intervenções.
+
+O smoke é evidência de uma execução, não prova de fidelidade geral. As instruções de conteúdo não são um novo bloqueio semântico. A resposta ainda pode omitir verificações úteis ou produzir afirmações sem apoio; compare com as fontes. A duração em CPU deste job não representa benchmark do host do autor.
