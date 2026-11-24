@@ -220,3 +220,19 @@ test('compact model response with usage fits and full text remains available',as
  await page.locator('.full-answer>summary').click();
  await expect(page.locator('.full-answer')).toContainText('FINAL-DO-TEXTO');
 });
+
+test('governance pillars have distinct visual identities and policies live in performance',async({page})=>{
+ await connect(page,'l2');
+ await page.getByRole('button',{name:'Governança',exact:true}).click();
+ const grid=page.locator('.governance-full .pillar-grid');
+ await expect(grid.locator(':scope > article')).toHaveCount(6);
+ const colors=await grid.locator(':scope > article').evaluateAll(elements=>elements.map(el=>getComputedStyle(el).backgroundColor));
+ expect(new Set(colors).size).toBe(6);
+ const performance=grid.locator('[data-pillar="performance"]');
+ await expect(performance.getByLabel('Políticas aplicadas no backend')).toBeVisible();
+ await expect(performance.locator('dl')).toContainText('30 / min');
+ await expect(performance.locator('dl')).toContainText('16000 caracteres');
+ await expect(page.locator('.governance-full > section').filter({hasText:'POLÍTICAS APLICADAS NO BACKEND'})).toHaveCount(1);
+ await performance.getByText('Escopo das políticas',{exact:true}).click();
+ await expect(performance).toContainText('retorna 429');
+});

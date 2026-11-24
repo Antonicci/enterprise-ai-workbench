@@ -64,3 +64,27 @@
  .compact-mode .source-panel .panel-title{padding-bottom:4px;margin-bottom:4px}
  .compact-mode .source-grid details{margin-top:2px;padding-top:0}
 }
+
+/* Cor identifica o pilar; nome, número e estado continuam disponíveis sem depender dela. */
+.pillar-grid .governance-pillar{--pillar-accent:#748296;--pillar-bg:#f8fafc;--pillar-ink:#344256;background:var(--pillar-bg);border-top:4px solid var(--pillar-accent)}
+.pillar-grid .pillar-operations{--pillar-accent:#517fb4;--pillar-bg:#eff5fc;--pillar-ink:#2c527e}
+.pillar-grid .pillar-security{--pillar-accent:#8863ad;--pillar-bg:#f6f1fb;--pillar-ink:#644382}
+.pillar-grid .pillar-reliability{--pillar-accent:#398880;--pillar-bg:#eef8f6;--pillar-ink:#28675f}
+.pillar-grid .pillar-performance{--pillar-accent:#af7b21;--pillar-bg:#fff7e8;--pillar-ink:#7a5313}
+.pillar-grid .pillar-cost{--pillar-accent:#b86b50;--pillar-bg:#fff2ed;--pillar-ink:#874831}
+.pillar-grid .pillar-sustainability{--pillar-accent:#6b9145;--pillar-bg:#f1f7e9;--pillar-ink:#45672b}
+.governance-pillar>h3,.governance-pillar .pillar-number{color:var(--pillar-ink)}
+.governance-pillar summary{color:var(--pillar-ink)}
+.backend-policies{margin:12px 0 8px;padding-top:10px;border-top:1px solid #dfd5bd}
+.backend-policies h4{font-size:10px;letter-spacing:1px;margin:0 0 9px;color:var(--pillar-ink)}
+.policy-values{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:0}
+.policy-values>div{min-width:0;padding:7px 8px;background:#ffffffa6;border:1px solid #e8dec6;border-radius:6px}
+.policy-values dt{font-size:10px;color:#635a46;margin-bottom:4px}
+.policy-values dd{font-size:13px;font-weight:650;color:#4e3d20;margin:0;overflow-wrap:anywhere}
+.backend-policies details{padding:7px 0 0;margin-top:8px}
+.compact-mode .governance-pillar .backend-policies{margin:8px 0 0;padding-top:8px}
+.compact-mode .policy-values>div{padding:5px 7px}
+.compact-mode .policy-values dt{font-size:9px;margin-bottom:2px}
+.compact-mode .policy-values dd{font-size:12px}
+.compact-mode .backend-policies h4{font-size:9px;letter-spacing:.7px}
+@media(prefers-contrast:more){.pillar-grid .governance-pillar{border-color:var(--pillar-accent)}.policy-values>div{background:#fff;border-color:#85734c}}
