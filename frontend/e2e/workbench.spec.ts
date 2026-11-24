@@ -198,3 +198,25 @@ test('compact view fits the three overview sections and preserves access to full
  await expect(page.locator('.compact-mode')).toHaveCount(0);
  await expect(page.getByRole('button',{name:'Conhecimento',exact:false})).toBeVisible();
 });
+
+test('compact model response with usage fits and full text remains available',async({page})=>{
+ await page.setViewportSize({width:1440,height:900});
+ await connect(page,'l2');
+ const fullText='## Resumo\n\n'+('Investigue a taxa de erros e compare as evidências autorizadas antes de propor qualquer mitigação. '.repeat(8))+'FINAL-DO-TEXTO';
+ await page.route('**/api/chat',async route=>{
+  const response=await route.fetch();const result=await response.json();
+  // Layout-only fixture: not a model evaluation or measured token benchmark.
+  result.answer=fullText;result.provider='ollama';result.chat_model='layout-fixture';
+  result.usage={input_tokens:1294,output_tokens:267,output_tokens_per_second:9.78,cost_estimate:null};
+  await route.fulfill({response,json:result});
+ });
+ await page.getByRole('checkbox').check();
+ await page.getByRole('button',{name:'Investigar →',exact:true}).click();
+ await expect(page.locator('.response').first()).toContainText('Investigue');
+ await page.getByRole('button',{name:'Visão compacta',exact:true}).click();
+ await expect(page.locator('.usage-metrics')).toContainText('1294');
+ expect(await page.locator('.notice').evaluate(el=>el.getBoundingClientRect().bottom)).toBeLessThanOrEqual(900);
+ await expect(page.locator('.answer-panel>.response')).toContainText('…');
+ await page.locator('.full-answer>summary').click();
+ await expect(page.locator('.full-answer')).toContainText('FINAL-DO-TEXTO');
+});

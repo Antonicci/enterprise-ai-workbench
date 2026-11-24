@@ -54,3 +54,5 @@
  .compact-mode .notice{grid-column:1 / -1}
  .compact-mode .environment-strip>div{padding-top:6px;padding-bottom:6px}
 }
+
+@media(min-width:1001px){.compact-mode .usage-metrics{margin:5px 0!important;padding:4px 8px;line-height:1.4!important}}
