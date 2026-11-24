@@ -44,3 +44,13 @@
  .compact-mode .heading{margin:9px 0}
  .compact-mode .usage-metrics{padding:5px 8px;font-size:10px!important;line-height:1.5}
 }
+
+@media(min-width:1001px){
+ .compact-mode .investigation-view{display:grid;grid-template-columns:minmax(240px,.75fr) minmax(0,2.25fr);gap:12px;align-items:start}
+ .compact-mode .investigation-grid{display:contents}
+ .compact-mode .query-panel{grid-column:1;grid-row:1 / span 2}
+ .compact-mode .answer-panel{grid-column:2;grid-row:1}
+ .compact-mode .source-panel{grid-column:2;grid-row:2;margin-top:0}
+ .compact-mode .notice{grid-column:1 / -1}
+ .compact-mode .environment-strip>div{padding-top:6px;padding-bottom:6px}
+}
