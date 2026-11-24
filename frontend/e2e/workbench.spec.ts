@@ -223,7 +223,7 @@ test('compact model response with usage fits and full text remains available',as
 
 test('governance pillars have distinct visual identities and policies live in performance',async({page})=>{
  await connect(page,'l2');
- await page.getByRole('button',{name:'Governança',exact:true}).click();
+ await page.getByRole('button',{name:'Governança',exact:false}).click();
  const grid=page.locator('.governance-full .pillar-grid');
  await expect(grid.locator(':scope > article')).toHaveCount(6);
  const colors=await grid.locator(':scope > article').evaluateAll(elements=>elements.map(el=>getComputedStyle(el).backgroundColor));
