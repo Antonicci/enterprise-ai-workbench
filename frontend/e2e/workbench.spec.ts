@@ -261,3 +261,22 @@ test('reference playbooks expose proposed triggers without claiming active fallb
  await page.setViewportSize({width:390,height:844});
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
 });
+
+test('compact workspace uses wide screens and expanded pillars do not stretch siblings',async({page})=>{
+ await page.setViewportSize({width:1920,height:1080});
+ await connect(page,'l2');
+ await page.getByRole('button',{name:'Visão compacta',exact:true}).click();
+ const main=page.locator('.compact-mode>main');
+ const bounds=await main.boundingBox();
+ expect(bounds!.width).toBeGreaterThanOrEqual(1900);
+ await page.getByRole('button',{name:'Governança',exact:true}).click();
+ const grid=page.locator('.governance-overview .pillar-grid');
+ await expect(grid.locator(':scope > article')).toHaveCount(6);
+ const operations=grid.locator('[data-pillar="operations"]');
+ const security=grid.locator('[data-pillar="security"]');
+ await operations.locator('.pillar-reference>summary').click();
+ await operations.getByText('Métricas e gatilhos propostos',{exact:true}).click();
+ const heights=await Promise.all([operations,security].map(locator=>locator.evaluate(el=>el.getBoundingClientRect().height)));
+ expect(heights[0]).toBeGreaterThan(heights[1]+100);
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
+});

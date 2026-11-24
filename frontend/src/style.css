@@ -108,3 +108,11 @@
 .reference-route{padding-left:22px}
 .pillar-reference a{color:var(--pillar-ink);text-decoration:underline;overflow-wrap:anywhere}
 .pillar-reference li{font-size:12px;line-height:1.75;margin:7px 0}
+
+/* Usar a largura do viewport também em monitores grandes e zoom reduzido. */
+.compact-mode>main{max-width:none}
+.pillar-grid{align-items:start}
+@media(min-width:1700px){
+ .compact-mode .panel p{font-size:13px}
+ .compact-mode .pillar-grid h3{font-size:18px}
+}
