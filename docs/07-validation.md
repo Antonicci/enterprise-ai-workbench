@@ -137,3 +137,14 @@ Esta mudança é de apresentação e organização do frontend. Não altera os v
 - Adaptação do modelo, serviços e políticas de backend não mudaram; o smoke Ollama não foi repetido. Os exemplos de limiares não são configuração efetiva ou benchmark.
 
 Os guias ligam recomendações a cobertura de medição, gatilho proposto, ação, recuperação e validação. [Escopo e referências primárias](13-governance-reference-playbooks.md).
+
+
+## Largura da visão compacta e altura dos cartões
+
+[Execução aprovada 45473868911](https://github.com/Antonicci/enterprise-ai-workbench/actions/runs/45473868911), código 14cc7cf60b4dc3aabde3c250e1ebc09cb9cdce13:
+
+- Build frontend, **75 testes backend** e **16 testes de navegador por modo** (32 no total), demo e Keycloak, aprovados.
+- Novo cenário em viewport 1920 × 1080 verifica que o main compacto utiliza pelo menos 1900 px, sem overflow horizontal.
+- Ao abrir métricas e gatilhos de um pilar, os cartões vizinhos mantêm sua altura natural, em vez de esticar o fundo até a altura do conteúdo expandido.
+- Casos de enquadramento em 1440 × 900, fontes, resposta longa e guias de referência continuam aprovados.
+- Alteração restrita a CSS e testes. Não modifica geração, recuperação, métricas, autorização ou serviços. O smoke de modelo real não foi repetido.
