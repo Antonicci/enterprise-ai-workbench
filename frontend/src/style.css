@@ -56,3 +56,11 @@
 }
 
 @media(min-width:1001px){.compact-mode .usage-metrics{margin:5px 0!important;padding:4px 8px;line-height:1.4!important}}
+
+@media(min-width:1001px){
+ .compact-mode .heading{margin:6px 0}
+ .compact-mode .environment-strip{margin-bottom:10px}
+ .compact-mode .source-panel{padding:10px}
+ .compact-mode .source-panel .panel-title{padding-bottom:4px;margin-bottom:4px}
+ .compact-mode .source-grid details{margin-top:2px;padding-top:0}
+}
