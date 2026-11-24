@@ -85,3 +85,14 @@ Não há roteamento automático por VRAM. Provedores de API não revelam hardwar
 - [Ollama modelos carregados](https://docs.ollama.com/api/ps)
 - [Identidade e perfis](08-identity-and-profiles.md)
 - [Comparação numérica](11-deterministic-numeric-checks.md)
+
+
+## Organização dos pilares na interface
+
+Os pilares usam identidades visuais distintas: azul (operação), roxo (segurança), verde-azulado (confiabilidade), âmbar (performance), coral (custos) e verde (sustentabilidade). Cor identifica o tema, não o nível de conformidade. Nome, número e estado textual continuam visíveis.
+
+Os seis limites de processamento aparecem em **Políticas aplicadas no backend**, dentro de Performance. O agrupamento organiza a consulta, mas timeout e admissão também apoiam Confiabilidade e Segurança. A seção expansível de escopo preserva essa distinção e os limites de aplicação por processo.
+
+Permissões da sessão estão em Segurança; preços para estimativa, em Custos. O diagnóstico de modelos permanece em bloco próprio. Tanto a visão usual quanto a compacta usam o mesmo componente de pilar e os valores retornados pela API.
+
+A apresentação está dividida em Governance.tsx (coleta e composição), GovernancePillar.tsx (cartões e políticas) e governance.types.ts (contratos TypeScript). Resumos e cores são associados pelo nome do pilar, evitando dependência da ordem do array. A API continua sendo a origem dos estados e valores efetivos; a interface não concede permissões.

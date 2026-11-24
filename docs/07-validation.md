@@ -111,3 +111,16 @@ Os controles são locais ao processo e restritos a chat. Contabilização financ
 - Detalhes, políticas, fontes e resposta completa continuam acessíveis por expansão ou ao sair da visão compacta. O texto inicial é limitado a 280 caracteres com reticências; não é um novo resumo gerado.
 
 Os primeiros testes detectaram excesso de altura na Investigação, incluindo a variante com uso de tokens. Espaçamento e distribuição das fontes foram ajustados até os cenários passarem. Expandir conteúdo ou usar outra dimensão de tela pode exigir rolagem; o teste não promete acomodar todo o conteúdo expandido em uma tela.
+
+
+## Cores e políticas por pilar
+
+[Execução aprovada 45462218666](https://github.com/Antonicci/enterprise-ai-workbench/actions/runs/45462218666), código 958b86552e8f118c2c0cefc87efaf27735843ff7a:
+
+- **75 testes backend**, build frontend e **14 testes de navegador por modo** (28 no total), demo e Keycloak, aprovados.
+- Nova regressão verifica seis fundos distintos e confirma que as políticas, seus valores e o escopo expansível estão dentro de Performance.
+- Regressões de enquadramento compacto, resposta longa, perfis, fontes e acesso ao conteúdo completo continuam aprovadas.
+- Capturas de governança foram revisadas visualmente; nome, número e estado permanecem disponíveis além das cores. O contraste calculado para títulos e texto principal nas seis cores supera 4,5:1; isso não é auditoria completa de acessibilidade.
+- O código de governança foi separado em composição, cartão de pilar/políticas e tipos compartilhados. Cores e resumos são associados ao nome do pilar, não à posição na lista.
+
+Esta mudança é de apresentação e organização do frontend. Não altera os valores de política ou sua aplicação no backend. A execução real de Ollama não foi repetida, pois adaptadores e serviços não foram modificados.
