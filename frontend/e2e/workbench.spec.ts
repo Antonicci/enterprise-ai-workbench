@@ -236,3 +236,28 @@ test('governance pillars have distinct visual identities and policies live in pe
  await performance.getByText('Escopo das políticas',{exact:true}).click();
  await expect(performance).toContainText('retorna 429');
 });
+
+test('reference playbooks expose proposed triggers without claiming active fallback or autoscaling',async({page})=>{
+ await connect(page,'l2');
+ await page.getByRole('button',{name:'Governança',exact:false}).click();
+ const grid=page.locator('.governance-full .pillar-grid');
+ const reliability=grid.locator('[data-pillar="reliability"]');
+ await reliability.locator('.pillar-reference>summary').click();
+ await expect(reliability.locator('.reference-warning').first()).toContainText('não estão ativos');
+ await reliability.getByText('Dois modelos e circuit breaker',{exact:true}).click();
+ await expect(reliability.locator('.reference-model-plan')).toContainText('não estão implementados');
+ await expect(reliability.locator('.reference-model-plan')).toContainText('qwen2.5:1.5b');
+ await expect(reliability.locator('.reference-model-plan')).toContainText('demo sem LLM ativo');
+ await reliability.getByText('Métricas e gatilhos propostos',{exact:true}).click();
+ await expect(reliability.locator('.reference-trigger').first()).toContainText('5 falhas transitórias');
+ const performance=grid.locator('[data-pillar="performance"]');
+ await performance.locator('.pillar-reference>summary').click();
+ await performance.getByText('Escalabilidade e elasticidade',{exact:true}).click();
+ await expect(performance).toContainText('Compose atual não cria ou remove réplicas automaticamente');
+ const cost=grid.locator('[data-pillar="cost"]');
+ await cost.locator('.pillar-reference>summary').click();
+ await cost.getByText('Orçamento e elasticidade de custos',{exact:true}).click();
+ await expect(cost).toContainText('Ainda não bloqueiam gasto');
+ await page.setViewportSize({width:390,height:844});
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
+});

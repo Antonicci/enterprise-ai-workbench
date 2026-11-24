@@ -1,3 +1,4 @@
+import PillarReference, {type ModelContext} from './PillarReference';
 import type {GovernanceReport, Pillar} from './governance.types';
 
 type Presentation = {id: string; summary: string};
@@ -66,9 +67,10 @@ type Props = {
   index: number;
   report: GovernanceReport;
   compact: boolean;
+  modelContext: ModelContext;
 };
 
-export default function GovernancePillar({pillar, index, report, compact}: Props) {
+export default function GovernancePillar({pillar, index, report, compact, modelContext}: Props) {
   const visual = presentation[pillar.name] ?? {id: 'other', summary: pillar.evidence};
 
   return (
@@ -100,11 +102,7 @@ export default function GovernancePillar({pillar, index, report, compact}: Props
         </details>
       )}
 
-      <details>
-        <summary>{compact ? 'Evidência e lacunas' : 'Próxima evolução'}</summary>
-        {compact && <p>{pillar.evidence}</p>}
-        <p>{pillar.gap}</p>
-      </details>
+      <PillarReference id={visual.id} pillar={pillar} compact={compact} modelContext={modelContext}/>
     </article>
   );
 }

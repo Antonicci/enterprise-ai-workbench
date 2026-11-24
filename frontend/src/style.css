@@ -88,3 +88,23 @@
 .compact-mode .policy-values dd{font-size:12px}
 .compact-mode .backend-policies h4{font-size:9px;letter-spacing:.7px}
 @media(prefers-contrast:more){.pillar-grid .governance-pillar{border-color:var(--pillar-accent)}.policy-values>div{background:#fff;border-color:#85734c}}
+
+/* Referências são conteúdo de estudo, sem estado operacional ou ações automáticas. */
+.pillar-reference .reference-warning{font-size:11px;padding:9px 10px;border-left:3px solid var(--pillar-accent);background:#fff9e9;color:#665226}
+.pillar-reference details{padding:9px 0;margin-top:8px}
+.pillar-reference h4{font-size:12px;margin:14px 0 9px;color:var(--pillar-ink)}
+.pillar-reference h5{font-size:12px;line-height:1.65;margin:0 0 8px;color:var(--pillar-ink)}
+.reference-metrics,.reference-decisions{margin:8px 0}
+.reference-metrics>div,.reference-decisions>div{padding:10px 0;border-bottom:1px solid #dce3e8}
+.reference-metrics dt,.reference-decisions dt{font-weight:650;font-size:12px}
+.reference-metrics dd,.reference-decisions dd{font-size:12px;line-height:1.7;margin:6px 0 0;color:#4d6177}
+.reference-coverage{font-size:10px;display:inline-block;margin-left:5px;padding:2px 7px;background:#ffffffc9;border:1px solid #ccd7e1;border-radius:10px;color:#40556c}
+.reference-trigger{padding:12px;background:#ffffffa6;border:1px solid #d7e0e8;border-radius:7px;margin:10px 0}
+.reference-trigger p{margin:7px 0}
+.reference-models{display:grid;grid-template-columns:1fr;gap:10px;margin:12px 0}
+.reference-models>div{background:#ffffffb8;border:1px solid #c7ded8;border-radius:7px;padding:12px}
+.reference-models small{font-size:10px;letter-spacing:1px;display:block;margin-bottom:7px;color:#2a635d}
+.reference-models strong{display:block;font-size:13px;overflow-wrap:anywhere}
+.reference-route{padding-left:22px}
+.pillar-reference a{color:var(--pillar-ink);text-decoration:underline;overflow-wrap:anywhere}
+.pillar-reference li{font-size:12px;line-height:1.75;margin:7px 0}

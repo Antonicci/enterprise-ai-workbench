@@ -1,17 +1,19 @@
 import {useEffect, useState} from 'react';
 import GovernancePillar from './GovernancePillar';
+import type {ModelContext} from './PillarReference';
 import type {ApiRequest, GovernanceReport, RuntimeReport} from './governance.types';
 
 type Props = {
   request: ApiRequest;
   canOperate: boolean;
   compact?: boolean;
+  modelContext: ModelContext;
 };
 
 const gib = (bytes: number | null) =>
   bytes === null ? 'Não informado' : (bytes / 1024 ** 3).toFixed(2) + ' GiB';
 
-export default function Governance({request, canOperate, compact = false}: Props) {
+export default function Governance({request, canOperate, compact = false, modelContext}: Props) {
   const [report, setReport] = useState<GovernanceReport | null>(null);
   const [runtime, setRuntime] = useState<RuntimeReport | null>(null);
   const [selected, setSelected] = useState('');
@@ -46,7 +48,7 @@ export default function Governance({request, canOperate, compact = false}: Props
 
   const model = runtime?.models.find(item => item.name === selected);
   const cards = (compactCards: boolean) => report?.pillars.map((pillar, index) => (
-    <GovernancePillar key={pillar.name} pillar={pillar} index={index} report={report} compact={compactCards}/>
+    <GovernancePillar key={pillar.name} pillar={pillar} index={index} report={report} compact={compactCards} modelContext={modelContext}/>
   ));
 
   return (
