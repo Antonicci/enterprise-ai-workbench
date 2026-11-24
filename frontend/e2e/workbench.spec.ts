@@ -167,3 +167,31 @@ test('operations displays measured outcomes after a query and preserves the coll
  await page.getByRole('button',{name:'Consultar capacidade e modelos'}).click();
  await expect(page.locator('.governance-view')).toContainText('Diagnóstico de modelos locais disponível apenas para Ollama.');
 });
+
+test('compact view fits the three overview sections and preserves access to full details',async({page})=>{
+ await page.setViewportSize({width:1440,height:900});
+ await connect(page,'l2');
+ await page.getByRole('checkbox').check();
+ await page.getByRole('button',{name:'Investigar →',exact:true}).click();
+ await expect(page.getByLabel('Comparação calculada pelo backend')).toBeVisible();
+ await page.getByRole('button',{name:'Visão compacta',exact:true}).click();
+ await expect(page.locator('.compact-mode')).toBeVisible();
+ await expect(page.getByRole('banner',{name:'Sessão ativa'})).toContainText('Consulta nível 2');
+ await expect(page.locator('.full-answer')).not.toHaveAttribute('open','');
+ await expect(page.locator('.opening-label')).toContainText('Trecho inicial');
+ let bottom=await page.locator('.notice').evaluate(el=>el.getBoundingClientRect().bottom);
+ expect(bottom).toBeLessThanOrEqual(900);
+ await page.getByRole('button',{name:'Governança',exact:true}).click();
+ await expect(page.getByLabel('Visão compacta da governança')).toBeVisible();
+ await expect(page.locator('.governance-overview .pillar-grid article')).toHaveCount(6);
+ await expect(page.locator('.governance-overview')).toContainText('sem certificação');
+ bottom=await page.locator('.governance-overview').evaluate(el=>el.getBoundingClientRect().bottom);
+ expect(bottom).toBeLessThanOrEqual(900);
+ await page.getByRole('button',{name:'Arquitetura',exact:true}).click();
+ await expect(page.getByLabel('Diagrama de componentes da solução')).toBeVisible();
+ bottom=await page.locator('.architecture-panel').evaluate(el=>el.getBoundingClientRect().bottom);
+ expect(bottom).toBeLessThanOrEqual(900);
+ await page.getByRole('button',{name:'Sair da visão compacta',exact:true}).click();
+ await expect(page.locator('.compact-mode')).toHaveCount(0);
+ await expect(page.getByRole('button',{name:'Conhecimento',exact:false})).toBeVisible();
+});
