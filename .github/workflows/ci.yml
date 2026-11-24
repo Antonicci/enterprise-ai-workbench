@@ -99,6 +99,14 @@ jobs:
       - name: Browser profiles, editing, MCP and architecture
         run: npm run test:e2e
         working-directory: frontend
+      - name: Compact layout screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: compact-layout-${{ matrix.auth }}
+          path: frontend/test-results/compact-*.png
+          if-no-files-found: ignore
+          retention-days: 7
       - name: Container diagnostics
         if: failure()
         run: docker compose -f compose.yaml -f compose.oidc.yaml logs
