@@ -230,8 +230,8 @@ test('governance pillars have distinct visual identities and policies live in pe
  expect(new Set(colors).size).toBe(6);
  const performance=grid.locator('[data-pillar="performance"]');
  await expect(performance.getByLabel('Políticas aplicadas no backend')).toBeVisible();
- await expect(performance.locator('dl')).toContainText('30 / min');
- await expect(performance.locator('dl')).toContainText('16000 caracteres');
+ await expect(performance.locator('.policy-values')).toContainText('30 / min');
+ await expect(performance.locator('.policy-values')).toContainText('16000 caracteres');
  await expect(page.locator('.governance-full > section').filter({hasText:'POLÍTICAS APLICADAS NO BACKEND'})).toHaveCount(1);
  await performance.getByText('Escopo das políticas',{exact:true}).click();
  await expect(performance).toContainText('retorna 429');
