@@ -286,7 +286,7 @@ test('header downloads the entire expanded page as JPEG and restores the workspa
  await connect(page,'l2');
  await page.getByRole('button',{name:'Visão compacta',exact:true}).click();
  await page.getByRole('button',{name:'Governança',exact:true}).click();
- const details=page.locator('[data-pillar="operations"] .pillar-reference');
+ const details=page.locator('[data-pillar="operations"] .pillar-reference').first();
  await details.locator(':scope > summary').click();
  await page.locator('[data-pillar="operations"]').getByText('Métricas e gatilhos propostos',{exact:true}).click();
  const height=await page.locator('.shell').evaluate(el=>el.scrollHeight);
