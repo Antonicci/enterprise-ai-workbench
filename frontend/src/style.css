@@ -26,3 +26,21 @@
 .compact-mode .architecture-panel .flow-tabs{margin-bottom:8px}.compact-mode .architecture-intro{margin:8px 0;font-size:11px}.compact-mode .component-map{width:100%;max-width:1080px;max-height:440px;min-width:0;display:block;margin:auto}.compact-mode .diagram-scroll{overflow:visible}.compact-mode .component-detail{padding:10px 14px;margin:8px 0}.compact-mode .component-detail h3{font-size:14px;margin:0 0 4px}.compact-mode .component-detail p{margin:0}.compact-mode .architecture-panel>.architecture-cards{display:none}.compact-mode .architecture-roles{font-size:11px;background:#f1f6eb;padding:8px 12px;border-radius:6px;margin:8px 0}.compact-mode .architecture-provider-note{font-size:10px!important;margin-bottom:0}
 @media(max-width:1000px){.compact-limits{grid-template-columns:repeat(3,minmax(0,1fr))}.compact-mode .investigation-grid{grid-template-columns:1fr}.compact-mode .execution-strip{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:650px){.visual-toolbar{flex-wrap:wrap}.compact-mode>main{padding:0 14px}.visual-toolbar nav{flex-wrap:wrap;margin:0}.visual-toolbar nav button{font-size:11px;padding:7px 9px}.compact-mode .heading h1{font-size:24px}.compact-limits{grid-template-columns:repeat(2,minmax(0,1fr))}.compact-mode .pillar-grid{grid-template-columns:1fr}.compact-mode .environment-strip{grid-template-columns:1fr}.compact-mode .component-map{min-width:700px;max-height:none}.compact-mode .diagram-scroll{overflow-x:auto}.compact-mode .execution-strip{grid-template-columns:1fr}.compact-mode .source-grid{grid-template-columns:1fr}}
+
+@media(min-width:1001px){
+ .compact-mode .execution-strip{padding-top:10px;margin-top:8px}
+ .compact-mode .execution-strip article{padding:8px}
+ .compact-mode .execution-strip span{display:none}
+ .compact-mode .source-grid{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+ .compact-mode .source-grid article{padding:8px;gap:10px}
+ .compact-mode .source-grid details{margin-top:4px;padding-top:2px}
+ .compact-mode .source-panel{padding:12px}
+ .compact-mode .source-panel .panel-title{padding-bottom:7px;margin-bottom:7px}
+ .compact-mode .tool-provenance,.compact-mode .numeric-comparison{padding:8px 12px;margin-bottom:8px}
+ .compact-mode .numeric-comparison p{margin:5px 0}
+ .compact-mode .numeric-comparison>small{margin-top:5px}
+ .compact-mode .full-answer{padding:5px 0;margin:5px 0}
+ .compact-mode .visual-toolbar{margin:6px 0}
+ .compact-mode .heading{margin:9px 0}
+ .compact-mode .usage-metrics{padding:5px 8px;font-size:10px!important;line-height:1.5}
+}
