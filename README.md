@@ -155,6 +155,8 @@ npm run test:e2e
 
 ## Documentação corporativa
 
+- [Guias de governança: resiliência, modelos, gatilhos e elasticidade](docs/13-governance-reference-playbooks.md) — referência de desenho, sem automações ativadas.
+
 - [Discovery e escopo](docs/01-discovery-and-scope.md)
 - [Escolha de técnicas](docs/02-solution-selection.md)
 - [Arquitetura](docs/03-architecture.md)

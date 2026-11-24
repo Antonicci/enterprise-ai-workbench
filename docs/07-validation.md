@@ -124,3 +124,16 @@ Os primeiros testes detectaram excesso de altura na Investigação, incluindo a 
 - O código de governança foi separado em composição, cartão de pilar/políticas e tipos compartilhados. Cores e resumos são associados ao nome do pilar, não à posição na lista.
 
 Esta mudança é de apresentação e organização do frontend. Não altera os valores de política ou sua aplicação no backend. A execução real de Ollama não foi repetida, pois adaptadores e serviços não foram modificados.
+
+
+## Guias de referência por pilar
+
+[Execução aprovada 45468172492](https://github.com/Antonicci/enterprise-ai-workbench/actions/runs/45468172492), código e87656e2496418cb770b71a4ce1d7c1cc7ccd941:
+
+- **75 testes backend**, build frontend e **15 testes de navegador por modo** (30 no total), demo e Keycloak, aprovados.
+- A nova regressão abre os guias de Confiabilidade, Performance e Custos, verifica os avisos de mecanismo proposto, a rota leve candidata, os exemplos de gatilho e ausência de alegação de autoscaling/orçamento ativo.
+- Os casos de enquadramento compacto, políticas dentro de Performance, cores distintas e resposta longa continuam aprovados. O guia expandido foi verificado quanto a overflow horizontal em viewport móvel.
+- Esses testes verificam conteúdo e navegação. Não simulam circuit breaker, failover entre modelos, escalonamento ou bloqueio de orçamento em runtime, porque tais mecanismos não foram implementados.
+- Adaptação do modelo, serviços e políticas de backend não mudaram; o smoke Ollama não foi repetido. Os exemplos de limiares não são configuração efetiva ou benchmark.
+
+Os guias ligam recomendações a cobertura de medição, gatilho proposto, ação, recuperação e validação. [Escopo e referências primárias](13-governance-reference-playbooks.md).

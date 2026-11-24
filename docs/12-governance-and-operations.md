@@ -96,3 +96,10 @@ Os seis limites de processamento aparecem em **Políticas aplicadas no backend**
 Permissões da sessão estão em Segurança; preços para estimativa, em Custos. O diagnóstico de modelos permanece em bloco próprio. Tanto a visão usual quanto a compacta usam o mesmo componente de pilar e os valores retornados pela API.
 
 A apresentação está dividida em Governance.tsx (coleta e composição), GovernancePillar.tsx (cartões e políticas) e governance.types.ts (contratos TypeScript). Resumos e cores são associados pelo nome do pilar, evitando dependência da ordem do array. A API continua sendo a origem dos estados e valores efetivos; a interface não concede permissões.
+
+
+## Guias de referência expansíveis
+
+Cada pilar inclui **Referência e evolução**: lacunas atuais, responsável sugerido, cobertura das métricas, condições de acionamento propostas, práticas e validação. A interface associa a configuração atual do modelo ao desenho P1/P2, sem ativar uma segunda rota.
+
+O catálogo também cobre circuit breaker, retries limitados, backpressure, quotas compartilhadas, autoscaling, reserva de orçamento, segurança de cache e energia por tarefa útil. Números são exemplos, não configuração efetiva. [Escopo, fluxo e referências primárias](13-governance-reference-playbooks.md).
