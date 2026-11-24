@@ -45,7 +45,7 @@ test('level 2 can use both MCP metrics tools and inspect component map',async({p
  await page.getByRole('checkbox').check();
  await page.getByRole('button',{name:'Investigar →',exact:true}).click();
  await expect(page.getByText('✓ get_service_metrics · MCP stdio')).toBeVisible();
- await page.getByRole('button',{name:'Observabilidade',exact:false}).click();
+ await page.getByRole('button',{name:'Operação',exact:false}).click();
  await page.getByRole('button',{name:'Consultar métricas do assistente'}).click();
  await expect(page.getByText('✓ get_ai_quality_metrics', {exact:false})).toBeVisible();
  await page.getByRole('button',{name:'Arquitetura',exact:false}).click();
@@ -142,4 +142,28 @@ test('numeric verdict is computed independently and a contradictory model draft 
  await expect(page.getByLabel('Comparação calculada pelo backend')).toContainText('4,8% > 2%');
  await expect(page.getByLabel('Comparação calculada pelo backend')).toContainText('Condição de investigação atendida');
  await expect(page.getByRole('alert')).toContainText('Rascunho do modelo retido');
+});
+
+test('governance shows six pillars and the active limits without granting operational access',async({page})=>{
+ await connect(page,'l1');
+ await page.getByRole('button',{name:'Governança',exact:false}).click();
+ await expect(page.locator('.pillar-grid article')).toHaveCount(6);
+ await expect(page.locator('.governance-view')).toContainText('16000 caracteres');
+ await expect(page.locator('.governance-view')).toContainText('Diagnóstico operacional restrito');
+ await expect(page.getByRole('button',{name:'Operação',exact:false})).toHaveCount(0);
+ await page.setViewportSize({width:390,height:844});
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
+});
+test('operations displays measured outcomes after a query and preserves the collection window',async({page})=>{
+ await connect(page,'l2');
+ await page.getByRole('button',{name:'Investigar →',exact:true}).click();
+ await expect(page.locator('.response')).toBeVisible();
+ await page.getByRole('button',{name:'Operação',exact:false}).click();
+ await expect(page.locator('.ops-window')).toContainText('Processo');
+ await expect(page.locator('.metric-grid')).toContainText('Taxa de sucesso');
+ await expect(page.locator('.request-history article').first()).toContainText('Concluída');
+ await expect(page.locator('.execution-health')).toContainText('execuções finalizadas');
+ await page.getByRole('button',{name:'Governança',exact:false}).click();
+ await page.getByRole('button',{name:'Consultar capacidade e modelos'}).click();
+ await expect(page.locator('.governance-view')).toContainText('Diagnóstico de modelos locais disponível apenas para Ollama.');
 });

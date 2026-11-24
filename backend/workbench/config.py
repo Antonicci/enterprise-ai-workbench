@@ -1,3 +1,4 @@
+from decimal import Decimal
 from typing import Literal
 from pydantic import Field, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -28,6 +29,15 @@ class Settings(BaseSettings):
     max_output_tokens: int = Field(default=512, ge=64, le=4096)
     request_timeout: float = Field(default=60, gt=0, le=180)
     top_k: int = Field(default=4, ge=1, le=10)
+    max_prompt_chars: int = Field(default=16000, ge=4000, le=64000)
+    requests_per_minute: int = Field(default=30, ge=1, le=1000)
+    max_concurrent_requests: int = Field(default=2, ge=1, le=32)
+    price_model: str = ""
+    input_price_per_million: Decimal | None = Field(default=None, ge=0, le=10000, allow_inf_nan=False)
+    output_price_per_million: Decimal | None = Field(default=None, ge=0, le=10000, allow_inf_nan=False)
+    price_currency: str = Field(default="USD", pattern=r"^[A-Z]{3}$")
+    host_ram_gb: float | None = Field(default=None, gt=0, le=100000, allow_inf_nan=False)
+    host_vram_gb: float | None = Field(default=None, gt=0, le=100000, allow_inf_nan=False)
     @model_validator(mode="after")
     def validate_mode(self):
         if self.auth_mode == "demo" and self.provider != "demo" and any(k.startswith("demo-") for k in self.auth_tokens):

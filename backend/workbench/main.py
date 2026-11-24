@@ -12,6 +12,8 @@ from .retrieval import Retrieval, resolve_scope
 from .seed import seed
 from .mcp_client import call_metrics, call_ai_metrics
 from .observability import Observability
+from .usage import Admission, PromptLimitError
+from .governance import governance_report, runtime_report
 from .numeric_checks import compare_runbook,validate_draft,safe_report
 
 log=logging.getLogger("workbench.audit")
@@ -31,8 +33,9 @@ def create_app(settings: Settings | None = None):
         app.state.retrieval=await asyncio.to_thread(Retrieval,settings)
         await asyncio.to_thread(seed,app.state.retrieval)
         app.state.observability=Observability()
+        app.state.admission=Admission(settings)
         yield
-    app=FastAPI(title="Enterprise AI Workbench",version="0.3.0",lifespan=lifespan)
+    app=FastAPI(title="Enterprise AI Workbench",version="0.4.0",lifespan=lifespan)
     app.state.authenticator=authenticator
     def identity(credentials: HTTPAuthorizationCredentials | None = Depends(bearer)):
         if credentials is None: raise HTTPException(status_code=401,detail="Bearer token obrigatório")
@@ -55,6 +58,16 @@ def create_app(settings: Settings | None = None):
                 "chat_model":settings.chat_model if settings.provider!="demo" else "extractive-demo",
                 "embedding_model":settings.embedding_model if settings.provider!="demo" else "hash-demo-256",
                 "metrics_allowed":"metrics:read" in user.permissions}
+
+    @app.get("/api/governance")
+    def governance(user=Depends(identity)):
+        require(user,"documents:search")
+        return governance_report(settings,user)
+
+    @app.get("/api/runtime")
+    async def runtime(user=Depends(identity)):
+        require(user,"ai-metrics:read")
+        return await runtime_report(settings)
 
     @app.get("/api/documents")
     def documents(request: Request,user=Depends(identity)):
@@ -84,7 +97,7 @@ def create_app(settings: Settings | None = None):
                 data=await call_ai_metrics(settings,credentials.credentials,request.app.state.observability.snapshot())
         except Exception:
             raise HTTPException(status_code=503,detail="Consulta MCP indisponível") from None
-        return {"data":data,"tool":"get_ai_quality_metrics","transport":"MCP stdio"}
+        return {"data":{**data,"admission":request.app.state.admission.snapshot()},"tool":"get_ai_quality_metrics","transport":"MCP stdio"}
 
     @app.post("/api/chat")
     async def chat(body: Question,request: Request,user=Depends(identity),credentials=Depends(bearer)):
@@ -93,9 +106,17 @@ def create_app(settings: Settings | None = None):
         scope=resolve_scope(body.question,body.document_scope,body.service if body.include_metrics else None)
         if body.include_metrics and scope not in (None,"all",body.service):
             raise HTTPException(status_code=422,detail="Escopo documental e serviço MCP devem coincidir ou usar Todos.")
+        try:
+            request.app.state.admission.acquire(user.subject)
+        except HTTPException:
+            request.app.state.observability.reject()
+            raise
         started,trace_id=time.perf_counter(),uuid.uuid4().hex
         retrieval=request.app.state.retrieval
         execution=[]
+        usage=None
+        citations=[]
+        metrics=None
         try:
             async with asyncio.timeout(settings.request_timeout):
                 phase=time.perf_counter()
@@ -107,11 +128,17 @@ def create_app(settings: Settings | None = None):
                 phase=time.perf_counter()
                 comparisons=compare_runbook(citations,metrics)
                 answer=await retrieval.provider.answer(body.question,citations,metrics,comparisons)
+                usage=getattr(answer,"usage",None)
                 execution.append({"id":"generation","label":"Geração por LLM" if settings.provider!="demo" else "Resposta extrativa","elapsed_ms":round((time.perf_counter()-phase)*1000),"detail":settings.chat_model if settings.provider!="demo" else "Sem LLM","status":"completed"})
+        except PromptLimitError:
+            request.app.state.observability.reject()
+            raise HTTPException(status_code=413,detail="Contexto acima do limite configurado. Reduza o escopo dos documentos.") from None
         except Exception:
-            request.app.state.observability.record(round((time.perf_counter()-started)*1000),failed=True)
+            request.app.state.observability.record(round((time.perf_counter()-started)*1000),len(citations),int(bool(metrics)),failed=True,execution=execution)
             log.warning("request_failed trace=%s subject=%s",trace_id,user.subject)
             raise HTTPException(status_code=503,detail={"message":"Dependência indisponível; verifique configuração e serviços.","trace_id":trace_id}) from None
+        finally:
+            request.app.state.admission.release()
         phase=time.perf_counter()
         answer_validation=validate_draft(answer,comparisons)
         if answer_validation['status']=='blocked':
@@ -119,9 +146,9 @@ def create_app(settings: Settings | None = None):
             log.warning('draft_blocked trace=%s subject=%s',trace_id,user.subject)
         execution.append({"id":"numeric_validation","label":"Verificação numérica","elapsed_ms":round((time.perf_counter()-phase)*1000) if comparisons else None,"detail":"Comparação no backend; guard de padrões limitado" if comparisons else "Nenhum limiar no formato reconhecido","status":"completed" if comparisons else "skipped"})
         elapsed=round((time.perf_counter()-started)*1000)
-        request.app.state.observability.record(elapsed,len(citations),int(bool(metrics)))
+        request.app.state.observability.record(elapsed,len(citations),int(bool(metrics)),usage=usage,execution=execution,blocked=answer_validation["status"]=="blocked")
         log.info("chat trace=%s subject=%s sources=%s metrics=%s elapsed_ms=%s",trace_id,user.subject,len(citations),body.include_metrics,elapsed)
-        return {"answer":answer,"citations":[c.model_dump() for c in citations],"metrics":metrics,
+        return {"answer":answer,"usage":usage,"citations":[c.model_dump() for c in citations],"metrics":metrics,
                 "trace_id":trace_id,"elapsed_ms":elapsed,"provider":settings.provider,"execution":execution,"comparisons":comparisons,"answer_validation":answer_validation,"retrieval_scope":scope or "all",
                 "chat_model":settings.chat_model if settings.provider!="demo" else "extractive-demo",
                 "tool_calls":[{"name":"get_service_metrics","transport":"MCP stdio","status":"ok"}] if metrics else []}

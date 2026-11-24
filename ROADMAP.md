@@ -14,7 +14,8 @@
 - [ ] Corpus de avaliação versionado e relatório de recuperação/geração.
 - [x] OIDC/Keycloak, três perfis, edição e autorização por ferramenta.
 - [x] Mapa interativo de componentes e contadores medidos do assistente.
-- [ ] Rate limiting, concorrência limitada e tracing distribuído.
+- [x] Rate limiting e concorrência limitada por processo.
+- [ ] Quotas compartilhadas e tracing distribuído.
 - [ ] Ingestão assíncrona, exclusão, proveniência e versionamento.
 - [x] CI com PostgreSQL, MCP e cenários de navegador demo/OIDC.
 - [ ] Testes de carga e falhas de infraestrutura.
@@ -30,7 +31,6 @@
 
 - [ ] Proposta de ação com aprovação específica, idempotência e trilha durável.
 - [ ] Integração ITSM em sandbox; sem remediação automática na infraestrutura real.
-- [ ] Página de estudo no site do Studio e vídeo com evidências de execução.
 
 ## v0.3 — Geração e evidência visual
 
@@ -38,3 +38,14 @@
 - [x] Etapas medidas, resposta formatada, fontes e modo apresentação.
 - [x] Smoke opt-in com modelo real em CPU; consultar o resultado da execução.
 - [ ] Benchmark do modelo 3B e GPU no ambiente do autor.
+
+## v0.4 — Governança e operação
+
+- [x] Operação com taxas, janelas, rejeições e execuções recentes sem prompts.
+- [x] Governança orientada aos seis pilares, com controles e lacunas explícitos.
+- [x] Uso de geração informado pelo provedor e estimativa de API com preços declarados.
+- [x] Limites de admissão e caracteres do prompt no backend.
+- [x] Diagnóstico de modelos instalados/carregados via Ollama, sem alegar VRAM total detectada.
+- [ ] Orçamento financeiro bloqueante e contabilização completa de embeddings e retries.
+- [ ] Telemetria durável, quotas distribuídas e alertas.
+- [ ] Benchmark de hardware e avaliação energética/qualidade por tarefa.

@@ -81,11 +81,17 @@ Documentos podem ser associados a pedidos, pagamentos ou uso geral. A busca apli
 
 O backend compara medições e limiares no formato de regra reconhecido usando Decimal. Exibe a relação e as fontes, e retém rascunhos com contradições reconhecidas. O guard é limitado e não equivale a validação semântica completa. [Escopo e limitações](docs/11-deterministic-numeric-checks.md).
 
+## Governança e operação — v0.4
+
+A tela **Operação** mostra taxas de execução, início/identificador do processo, latências, rejeições e uso reportado pelo provedor. **Governança** apresenta os seis pilares com evidências e lacunas, limites efetivos, preços configurados e diagnóstico de modelos Ollama. Não representa certificação ou conformidade completa.
+
+Admissão por usuário/concorrência e limite de caracteres no prompt são aplicados no backend. Tokens e custo têm cobertura explícita; nenhuma estimativa de VRAM ou custo local é apresentada como medição. [Configuração, denominadores e limites](docs/12-governance-and-operations.md).
+
 ## Roteiro visual
 
 1. Entre como consulta1 e investigue erros HTTP 500 na API de pedidos. Veja somente fontes nível 1.
 2. Como consulta2, habilite métricas: a API chama `get_service_metrics` por MCP stdio.
-3. Em **Observabilidade**, consulte `get_ai_quality_metrics`: contadores reais do backend, sem dados inventados de custo/qualidade.
+3. Em **Operação**, consulte `get_ai_quality_metrics`: contadores reais do backend, sem dados inventados de custo/qualidade.
 4. Como gestor, abra **Conhecimento**, selecione um documento, edite e salve. A reindexação atualiza conteúdo e classificação.
 5. Crie um documento nível 2. Ele não aparece nem na biblioteca, leitura direta ou contexto RAG de consulta1.
 6. Abra **Arquitetura**, selecione um fluxo e clique nos componentes. O mapa é explicativo; não representa tracing ao vivo.
@@ -160,4 +166,4 @@ npm run test:e2e
 
 ## Limites
 
-Sem multitenancy, RLS, exclusão documental, auditoria durável, ingestão assíncrona, quotas ou SLA. OIDC não transforma esse laboratório em ambiente de produção. PostgreSQL usa busca exata e credenciais LAB. O MCP é um worker local confiável, não um servidor remoto autenticado multiusuário. Custo/qualidade de modelo e MLOps preditivo não foram implementados. Timeout não garante cancelamento de trabalho síncrono em andamento. Nunca versionar segredos ou dados reais de clientes.
+Sem multitenancy, RLS, exclusão documental, auditoria durável, ingestão assíncrona, quotas compartilhadas ou SLA. OIDC não transforma esse laboratório em ambiente de produção. PostgreSQL usa busca exata e credenciais LAB. O MCP é um worker local confiável, não um servidor remoto autenticado multiusuário. Estimativa de geração por preços configurados não equivale a custo total medido. Avaliação de qualidade e MLOps preditivo não foram implementados. Timeout não garante cancelamento de trabalho síncrono em andamento. Nunca versionar segredos ou dados reais de clientes.

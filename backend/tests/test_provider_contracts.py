@@ -53,6 +53,7 @@ async def test_langchain_provider_contract(mode,fake_provider):
     citation=Citation(id='runbook-1',document_id='runbook',title='Runbook',excerpt='Verifique a fila.',score=0.8)
     answer=await provider.answer('Como investigar?',[citation],None)
     assert '[runbook-1]' in answer
+    assert answer.usage['input_tokens']==12 and answer.usage['output_tokens']==5
     assert len(seen)==2
     chat_body=seen[-1][1]
     assert 'Verifique a fila.' in json.dumps(chat_body,ensure_ascii=False)

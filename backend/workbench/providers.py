@@ -3,6 +3,7 @@ import hashlib
 import math
 import re
 from .config import Settings
+from .usage import GeneratedAnswer, PromptLimitError, reported_usage
 from .evidence import build_evidence, SYSTEM_PROMPT
 
 def normalize_answer(text: str) -> str:
@@ -55,7 +56,10 @@ class Provider:
         from langchain_core.messages import SystemMessage, HumanMessage
         import json
         context = json.dumps(build_evidence(citations,metrics,comparisons), ensure_ascii=False)
+        human=f"Pergunta: {question}\nEvidências (JSON): {context}"
+        if len(SYSTEM_PROMPT)+len(human)>self.settings.max_prompt_chars:
+            raise PromptLimitError("Contexto acima do limite de caracteres; reduza o escopo documental.")
         response = await self.chat.ainvoke([
             SystemMessage(content=SYSTEM_PROMPT),
-            HumanMessage(content=f"Pergunta: {question}\nEvidências (JSON): {context}")])
-        return normalize_answer(response.content if isinstance(response.content, str) else str(response.content))
+            HumanMessage(content=human)])
+        return GeneratedAnswer(normalize_answer(response.content if isinstance(response.content, str) else str(response.content)),reported_usage(response,self.settings))

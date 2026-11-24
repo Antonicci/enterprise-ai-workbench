@@ -23,4 +23,13 @@ assert result['metrics']['source_id']=='mcp:get_service_metrics'
 assert next(step for step in result['execution'] if step['id']=='generation')['label']=='Geração por LLM'
 assert result['comparisons'][0]['relation']=='>' and result['comparisons'][0]['triggered'] is True
 assert all(step['elapsed_ms']>=0 for step in result['execution'])
-print(json.dumps({'status':'PASS','model':result['chat_model'],'sources':len(result['citations']),'elapsed_ms':result['elapsed_ms'],'execution':result['execution'],'answer_for_manual_review':result['answer'],'comparisons':result['comparisons'],'answer_validation':result['answer_validation'],'scope':'real Ollama CPU smoke; manual source-attribution review, no GPU benchmark'},ensure_ascii=False))
+assert result['usage']['input_tokens']>0 and result['usage']['output_tokens']>0
+headers={'Authorization':'Bearer '+token}
+with urllib.request.urlopen(urllib.request.Request('http://localhost:8080/api/observability',headers=headers),timeout=30) as response:
+    stats=json.load(response)['data']
+assert stats['requests']==1 and stats['successful_requests']==1 and stats['success_rate_pct']==100
+assert stats['token_usage']['reported_requests']==1 and stats['cost'] is None
+with urllib.request.urlopen(urllib.request.Request('http://localhost:8080/api/runtime',headers=headers),timeout=10) as response:
+    runtime=json.load(response)
+assert runtime['available'] and any(model['name']==result['chat_model'] for model in runtime['models'])
+print(json.dumps({'status':'PASS','model':result['chat_model'],'sources':len(result['citations']),'elapsed_ms':result['elapsed_ms'],'execution':result['execution'],'usage':result['usage'],'operational_success_rate':stats['success_rate_pct'],'runtime':runtime,'answer_for_manual_review':result['answer'],'comparisons':result['comparisons'],'answer_validation':result['answer_validation'],'scope':'real Ollama CPU smoke; manual source-attribution review, no GPU benchmark'},ensure_ascii=False))
