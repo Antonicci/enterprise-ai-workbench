@@ -116,3 +116,4 @@
  .compact-mode .panel p{font-size:13px}
  .compact-mode .pillar-grid h3{font-size:18px}
 }
+.page-export-control{position:relative;flex-shrink:0}.export-error{position:absolute;right:0;top:100%;width:240px;padding:10px;background:#fff4f0;color:#973b22;border:1px solid #e9bfb2;border-radius:6px;z-index:20;font-size:11px;letter-spacing:0}.page-export .session-header{position:static!important;backdrop-filter:none!important}.page-export .response{max-height:none!important;overflow:visible!important}.page-export .diagram-scroll{overflow:visible!important}

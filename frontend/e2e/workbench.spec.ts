@@ -280,3 +280,34 @@ test('compact workspace uses wide screens and expanded pillars do not stretch si
  expect(heights[0]).toBeGreaterThan(heights[1]+100);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
 });
+
+test('header downloads the entire expanded page as JPEG and restores the workspace',async({page},testInfo)=>{
+ await page.setViewportSize({width:1440,height:900});
+ await connect(page,'l2');
+ await page.getByRole('button',{name:'Visão compacta',exact:true}).click();
+ await page.getByRole('button',{name:'Governança',exact:true}).click();
+ const details=page.locator('[data-pillar="operations"] .pillar-reference');
+ await details.locator(':scope > summary').click();
+ await page.locator('[data-pillar="operations"]').getByText('Métricas e gatilhos propostos',{exact:true}).click();
+ const height=await page.locator('.shell').evaluate(el=>el.scrollHeight);
+ expect(height).toBeGreaterThan(900);
+ const button=page.getByRole('button',{name:'Baixar página completa em JPG'});
+ const pending=page.waitForEvent('download');
+ await button.click();
+ const download=await pending;
+ expect(download.suggestedFilename()).toMatch(/^enterprise-ai-workbench-.*\.jpg$/);
+ const file=testInfo.outputPath('full-page.jpg');
+ await download.saveAs(file);
+ const {readFile}=await import('node:fs/promises');
+ const bytes=await readFile(file);
+ expect([...bytes.subarray(0,3)]).toEqual([255,216,255]);
+ const dimensions=await page.evaluate(async data=>{
+  const image=await createImageBitmap(new Blob([new Uint8Array(data)],{type:'image/jpeg'}));
+  return {width:image.width,height:image.height};
+ },[...bytes]);
+ expect(dimensions.height).toBeGreaterThan(height-2);
+ expect(dimensions.width).toBeGreaterThanOrEqual(1440);
+ await expect(button).toBeEnabled();
+ await expect(details).toHaveAttribute('open','');
+ expect(await page.locator('.shell').evaluate(el=>el.classList.contains('page-export')||(el as HTMLElement).inert)).toBeFalsy();
+});
