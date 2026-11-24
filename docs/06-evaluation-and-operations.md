@@ -1,4 +1,4 @@
-# Avaliação e operação — v0.2
+# Avaliação e operação — v0.4
 
 ## O que medir
 
@@ -22,11 +22,11 @@ Começar com perguntas sobre pedidos, pagamentos, ações que exigem aprovação
 
 Resposta inclui trace_id, elapsed_ms, provider, citations e tool_calls. Logs de aplicação incluem sujeito pseudonimizado, contagens e duração. As métricas MCP incluem serviço, janela e observed_at; os valores são fixtures sintéticas, não uma leitura de infraestrutura.
 
-A v0.2 adiciona dashboard e get_ai_quality_metrics com contadores reais por processo: consultas, falhas de execução, fontes, chamadas de ferramenta e média/p95 das últimas 500 latências. Tokens, custo, groundedness e recall são explicitamente não medidos. Ainda faltam OpenTelemetry, uso/custo de tokens, auditoria persistente e alertas. Um trace ID sozinho não comprova auditabilidade de ponta a ponta.
+A tela Operação e get_ai_quality_metrics exibem contadores reais por processo, taxas de execução, rejeições, início da coleta e média/p95 das últimas 500 latências. A v0.4 captura uso de geração informado pelo provedor e estima custo de API apenas com preços configurados para o modelo. Embeddings, retries e infraestrutura não entram nessa estimativa. Groundedness e recall não são medidos. Ainda faltam OpenTelemetry, contabilização completa, auditoria persistente e alertas. Um trace ID sozinho não comprova auditabilidade de ponta a ponta. Consulte os [denominadores e limites](12-governance-and-operations.md).
 
 ## Disponibilidade e falhas
 
-Sem fonte, o assistente informa a lacuna. Falha de dependência gera 503; não há resposta de fallback inventada. Timeout do fluxo não garante cancelamento de operações síncronas. O piloto exige concorrência limitada, fila e budgets separados de chat/embedding. Não expor o laboratório publicamente sem esses controles.
+Sem fonte, o assistente informa a lacuna. Falha de dependência gera 503; não há resposta de fallback inventada. Timeout do fluxo não garante cancelamento de operações síncronas. A v0.4 limita admissão e concorrência de chat por processo; fila, limites de ingestão e budgets compartilhados separados de chat/embedding continuam pendentes. Não expor o laboratório publicamente sem esses controles.
 
 ## Retenção e lifecycle
 

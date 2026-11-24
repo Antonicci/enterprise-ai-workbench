@@ -54,7 +54,7 @@ O namespace de embeddings muda ao trocar demo por Ollama. Documentos particulare
 
 O backend mede recuperação (inclui embedding da pergunta e busca), chamada MCP se solicitada e composição/geração. A UI exibe esses tempos somente após concluir. Enquanto aguarda, mostra duração decorrida no navegador, sem animação que afirme uma etapa já executada. Etapa MCP não solicitada aparece como não usada, sem duração inventada. Autorização do token acontece antes desses tempos; não é um span medido nessa tela.
 
-Tokens, custo e avaliação de groundedness/recall continuam não medidos. Nenhum percentual de confiança é inferido da similaridade.
+Na v0.4, tokens de geração são registrados quando informados pelo provedor. Custo de API exige preços configurados; custo local e avaliação de groundedness/recall continuam não medidos. Nenhum percentual de confiança é inferido da similaridade. A tela Governança permite consultar o inventário e memória alocada informados pelo Ollama; isso não detecta VRAM total ou livre. Veja [escopo de governança](12-governance-and-operations.md).
 
 ## Verificação real de modelo no CI
 

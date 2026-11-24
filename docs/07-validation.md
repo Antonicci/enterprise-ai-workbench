@@ -83,3 +83,18 @@ A revisão manual ainda identificou atribuição genérica do cálculo à “fer
 - Smoke com Qwen2.5 3B real em CPU aprovado. Na saída revisada, o modelo usou texto Markdown direto, citou a medição de 4,8% e distinguiu o limiar de 2%. Não repetiu as alegações de remoção de senhas nem de proibição geral de intervenções.
 
 O smoke é evidência de uma execução, não prova de fidelidade geral. As instruções de conteúdo não são um novo bloqueio semântico. A resposta ainda pode omitir verificações úteis ou produzir afirmações sem apoio; compare com as fontes. A duração em CPU deste job não representa benchmark do host do autor.
+
+
+## v0.4 — Governança e operação
+
+[Execução aprovada 45444053220](https://github.com/Antonicci/enterprise-ai-workbench/actions/runs/45444053220), código 771eab9c30e8811fe1f33684d8033f9f86f3b1aa:
+
+- **75 testes backend** aprovados com PostgreSQL. Incluem janela móvel por subject, concorrência, liberação após falha, rejeição de prompt antes da geração, estimativa decimal, cobertura parcial, endpoints autenticados e diagnóstico Ollama simulado sem vazamento de erro interno.
+- Build frontend aprovado e **11 testes de navegador em cada modo** (22 no total), demo e Keycloak. Cobrem os seis pilares, restrição operacional, coleta após consulta e responsividade.
+- **Qwen2.5 3B real em CPU** aprovado: 1294 tokens de entrada e 267 de saída reportados; operação retornou uma execução concluída e uso agregado correspondente. A taxa de 100% tem somente uma amostra neste smoke.
+- Diagnóstico real encontrou Qwen2.5 3B Q4_K_M carregado com contexto 4096 e zero bytes de alocação VRAM reportada neste runner CPU. Não foi inferida capacidade total de hardware.
+- Sem preço de API configurado e com provedor local, custo permaneceu nulo. Estimativa com preços declarados foi verificada nos testes, não como cobrança real.
+
+O job levou cerca de 73 s na consulta e reportou 9,78 tokens/s de avaliação da saída. Esses dados descrevem exclusivamente o runner CPU dessa execução; não são benchmark do host do autor. O texto do modelo ainda incluiu uma limitação irrelevante sobre senhas e citação documental fora do formato solicitado. Os controles de operação não resolvem essas questões semânticas nem avaliam qualidade automaticamente.
+
+Os controles são locais ao processo e restritos a chat. Contabilização financeira completa, quota distribuída, limites de ingestão, alertas, energia, hardware total detectado, HA e segurança de produção continuam pendentes. Veja [escopo e configuração](12-governance-and-operations.md).

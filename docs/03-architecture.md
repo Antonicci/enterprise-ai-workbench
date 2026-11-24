@@ -45,3 +45,7 @@ Namespace inclui provedor, modelo e acl-v2. Alterar pesos/dimensão sob o mesmo 
 ## Endpoints
 
 GET /api/auth/config é público e expõe somente configuração de login. /api/config retorna identidade/permissões sem segredos. GET /api/documents lista metadados permitidos; GET /api/documents/{id} retorna texto autorizado. POST /api/documents inclui ou substitui, apenas gestor. POST /api/chat consulta RAG e opcionalmente MCP. GET /api/observability consulta ferramenta de métricas do assistente, apenas nível 2.
+
+## Governança e admissão — v0.4
+
+GET /api/governance expõe políticas e evidências apenas após autenticação e permissão documental. GET /api/runtime exige ai-metrics:read e consulta endpoints de leitura fixos no Ollama configurado. POST /api/chat aplica admissão por subject e concorrência antes da recuperação; o adaptador valida o limite de caracteres antes de gerar. O resultado pode incluir uso informado pelo provedor, sem estado de uso global por adaptador. [Controles, métricas e lacunas](12-governance-and-operations.md).
