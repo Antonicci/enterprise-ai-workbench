@@ -61,3 +61,14 @@ Na v0.4, tokens de geração são registrados quando informados pelo provedor. C
 O job ollama-real-smoke é opt-in por mensagem de commit contendo `[ollama-smoke]`. Executa CPU com qwen2.5:3b e nomic-embed-text, incluindo saída para revisão manual de atribuição das fontes. O primeiro smoke histórico utilizou o modelo 0.5B. Valida geração, embeddings, fontes e MCP reais. Não mede qualidade e não comprova desempenho do modelo 3B na RTX 4050. Os outros jobs continuam exercitando a demo e os contratos simulados.
 
 Referências: [Ollama Docker](https://docs.ollama.com/docker), [Qwen2.5](https://ollama.com/library/qwen2.5).
+
+
+## Visão compacta do workspace
+
+O botão **Visão compacta**, no cabeçalho do workspace autenticado, alterna uma composição mais densa para Investigação, Governança e Arquitetura. A barra superior permite navegar entre essas três seções; **Sair da visão compacta** restaura a navegação e os detalhes usuais.
+
+- Investigação: pergunta, evidência MCP, comparação do backend, tempos e fontes. Exibe até 280 caracteres do primeiro parágrafo do modelo, com rótulo de trecho inicial e reticências quando necessário. A resposta completa permanece disponível em expansão; não há nova geração ou resumo inventado.
+- Governança: seis pilares, estados, limites efetivos e lacunas em expansão. Políticas completas, preços e diagnóstico continuam acessíveis em um bloco recolhível.
+- Arquitetura: mesmos dez componentes e conexões em disposição vertical mais curta, com explicação selecionável e distinção entre configuração ativa e alternativas.
+
+Compactação não muda autorização, filtros, valores, métricas ou comportamento do modelo. O enquadramento das visões gerais é testado em 1440 × 900; expandir texto, lacunas ou fontes pode exigir rolagem. Em telas menores, a disposição se adapta e o mapa permite rolagem horizontal. A visão não busca exibir todo o conteúdo expandido simultaneamente.

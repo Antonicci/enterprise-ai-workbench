@@ -98,3 +98,16 @@ O smoke é evidência de uma execução, não prova de fidelidade geral. As inst
 O job levou cerca de 73 s na consulta e reportou 9,78 tokens/s de avaliação da saída. Esses dados descrevem exclusivamente o runner CPU dessa execução; não são benchmark do host do autor. O texto do modelo ainda incluiu uma limitação irrelevante sobre senhas e citação documental fora do formato solicitado. Os controles de operação não resolvem essas questões semânticas nem avaliam qualidade automaticamente.
 
 Os controles são locais ao processo e restritos a chat. Contabilização financeira completa, quota distribuída, limites de ingestão, alertas, energia, hardware total detectado, HA e segurança de produção continuam pendentes. Veja [escopo e configuração](12-governance-and-operations.md).
+
+
+## Visões compactas — interface
+
+[Execução aprovada 45449207527](https://github.com/Antonicci/enterprise-ai-workbench/actions/runs/45449207527), código b5e3f7c47386da9ac8bb1333c67b4f9ae5bbbb98:
+
+- **75 testes backend**, build frontend e **13 testes de navegador em cada modo** (26 no total), demo e Keycloak, aprovados.
+- Regressão de enquadramento em **1440 × 900** verifica as visões gerais de Investigação, Governança e Arquitetura. Capturas dessas três seções ficam como artefatos temporários do CI.
+- Uma regressão adicional injeta resposta longa e metadados de uso para testar apenas a composição visual e acesso ao texto integral. Esses números são fixtures de UI, não benchmark ou consumo real.
+- As capturas revisadas usam o provedor demo extrativo; não representam uma nova execução com LLM. O smoke Ollama foi dispensado nesta alteração de interface, sem mudanças nos adaptadores ou backend.
+- Detalhes, políticas, fontes e resposta completa continuam acessíveis por expansão ou ao sair da visão compacta. O texto inicial é limitado a 280 caracteres com reticências; não é um novo resumo gerado.
+
+Os primeiros testes detectaram excesso de altura na Investigação, incluindo a variante com uso de tokens. Espaçamento e distribuição das fontes foram ajustados até os cenários passarem. Expandir conteúdo ou usar outra dimensão de tela pode exigir rolagem; o teste não promete acomodar todo o conteúdo expandido em uma tela.
