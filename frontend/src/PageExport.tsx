@@ -10,9 +10,26 @@ export default function PageExport(){
   const previousInert=root.inert;
   const x=window.scrollX,y=window.scrollY;
   let timer:ReturnType<typeof setTimeout>|undefined;
+  const restoreControls:(()=>void)[]=[];
   try{
    await document.fonts.ready;
    root.classList.add('page-export');root.inert=true;
+   // Native checkboxes can lose their state inside the SVG used for export.
+   // Draw the current DOM property explicitly, independently of previous results.
+   root.querySelectorAll<HTMLInputElement>('input[type="checkbox"]').forEach(input=>{
+    const marker=document.createElement('span');
+    marker.dataset.exportCheckbox=input.checked?'checked':'unchecked';
+    marker.setAttribute('aria-hidden','true');
+    marker.textContent=input.checked?'✓':'';
+    Object.assign(marker.style,{display:'inline-flex',width:'16px',height:'16px',
+     alignItems:'center',justifyContent:'center',verticalAlign:'middle',marginRight:'4px',
+     border:'1px solid '+(input.checked?'#477d37':'#64748b'),borderRadius:'3px',
+     backgroundColor:input.checked?'#477d37':'#ffffff',color:'#ffffff',
+     fontSize:'13px',fontWeight:'700',lineHeight:'1',flexShrink:'0'});
+    const style=input.getAttribute('style');
+    input.before(marker);input.style.display='none';
+    restoreControls.push(()=>{marker.remove();if(style===null)input.removeAttribute('style');else input.setAttribute('style',style);});
+   });
    await new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve())));
    const width=Math.ceil(root.scrollWidth),height=Math.ceil(root.scrollHeight);
    // Keep the whole page within browser canvas limits, even with expanded guides.
@@ -36,7 +53,8 @@ export default function PageExport(){
    setTimeout(()=>URL.revokeObjectURL(url),60000);
   }catch(reason){setError(reason instanceof Error?reason.message:'Não foi possível gerar o JPG. Tente novamente.');}
   finally{
-   clearTimeout(timer);root.classList.remove('page-export');root.inert=previousInert;
+   clearTimeout(timer);restoreControls.forEach(restore=>restore());
+   root.classList.remove('page-export');root.inert=previousInert;
    if(root.isConnected)window.scrollTo(x,y);
    setBusy(false);
   }

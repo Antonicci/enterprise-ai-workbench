@@ -311,3 +311,39 @@ test('header downloads the entire expanded page as JPEG and restores the workspa
  await expect(details).toHaveAttribute('open','');
  expect(await page.locator('.shell').evaluate(el=>el.classList.contains('page-export')||(el as HTMLElement).inert)).toBeFalsy();
 });
+
+test('JPEG preserves checked and unchecked MCP controls without changing the live form',async({page},testInfo)=>{
+ await page.setViewportSize({width:1440,height:900});
+ await connect(page,'l2');
+ await page.getByRole('button',{name:'Visão compacta',exact:true}).click();
+ const checkbox=page.getByRole('checkbox');
+ const {readFile}=await import('node:fs/promises');
+ for(const checked of [true,false]){
+  await checkbox.setChecked(checked);
+  const pending=page.waitForEvent('download');
+  await page.getByRole('button',{name:'Baixar página completa em JPG'}).click();
+  const marker=page.locator('[data-export-checkbox]');
+  await expect(marker).toHaveAttribute('data-export-checkbox',checked?'checked':'unchecked');
+  const box=await marker.boundingBox();
+  const rootWidth=await page.locator('.shell').evaluate(el=>el.scrollWidth);
+  const file=testInfo.outputPath(checked?'checked.jpg':'unchecked.jpg');
+  await (await pending).saveAs(file);
+  const bytes=await readFile(file);
+  const green=await page.evaluate(async({data,box,rootWidth})=>{
+   const bitmap=await createImageBitmap(new Blob([new Uint8Array(data)],{type:'image/jpeg'}));
+   const ratio=bitmap.width/rootWidth;
+   const canvas=document.createElement('canvas');canvas.width=16;canvas.height=16;
+   const ctx=canvas.getContext('2d')!;
+   ctx.drawImage(bitmap,box!.x*ratio,box!.y*ratio,box!.width*ratio,box!.height*ratio,0,0,16,16);
+   const pixels=ctx.getImageData(0,0,16,16).data;
+   let count=0;
+   for(let i=0;i<pixels.length;i+=4)if(pixels[i+1]>65&&pixels[i+1]>pixels[i]*1.2&&pixels[i+1]>pixels[i+2]*1.2)count++;
+   return count;
+  },{data:[...bytes],box,rootWidth});
+  if(checked)expect(green).toBeGreaterThan(80);
+  else expect(green).toBeLessThan(20);
+  await expect(checkbox).toBeChecked({checked});
+  await expect(checkbox).toBeVisible();
+  await expect(marker).toHaveCount(0);
+ }
+});
